@@ -1,0 +1,8 @@
+# Backend API and structured validation
+fastapi>=0.128,<0.137
+pydantic>=2.12,<3
+uvicorn[standard]>=0.35,<1
+
+# Local dashboard and test runner
+streamlit>=1.54,<2
+pytest>=8,<10

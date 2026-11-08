@@ -1,0 +1,11 @@
+.venv/
+.pip-bootstrap-temp/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest-tmp/
+.env
+*.sqlite3
+*.db
+runtime_data/
+

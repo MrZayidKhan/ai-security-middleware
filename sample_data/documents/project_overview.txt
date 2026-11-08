@@ -1,0 +1,3 @@
+Project Overview
+
+This synthetic document describes the local security middleware demonstration. The project uses controlled local operations and records only synthetic example data during development.
