@@ -2,7 +2,7 @@
 
 ## Status
 
-Milestone 5 implements a local model client, validated message shapes, a bounded agent loop, controlled local tools, an action gateway, content inspection, and a local review queue. Persistent audit storage, API, dashboard, and model integration with the controlled tools remain planned.
+The current checkpoint implements a local model client, validated message shapes, a bounded demonstration agent loop, controlled local tools, an action gateway, hybrid content inspection, sanitization, a local review queue, concise SQLite security events, and a Streamlit dashboard. FastAPI, end-to-end model-to-gateway integration, and complete execution auditing remain pending.
 
 ## Current demonstration flow
 
@@ -49,17 +49,17 @@ flowchart LR
     I -->|HOLD FOR REVIEW| Q[Local review queue]
 ```
 
-The inspector uses transparent rules. A direct instruction to expose sensitive data is held for review. A clear instruction override is replaced with `[Suspicious instruction removed.]`. Text that merely discusses security concepts passes. Sanitized content remains untrusted.
+The inspector combines validation, Unicode normalization, invisible-character removal, encoded-payload checks, transparent patterns, and an advisory structured assessment from the local model. A direct instruction to expose sensitive data is held for review. A clear instruction override or exact suspicious span may be replaced with `[Suspicious instruction removed.]`. Text that merely discusses security concepts can pass. Sanitized content remains untrusted.
 
 ## Components and responsibilities
 
-1. **Interface** — eventually accepts a user task and presents results/review items.
+1. **Interface** — the current Streamlit dashboard accepts text, presents inspection/retrieval results, shows review items, and displays stored security events.
 2. **Agent loop** — sends the task and relevant context to a local Ollama model, parses a proposed structured tool call, and continues with a result or produces a final response. The model proposes; it does not execute.
 3. **Schema validation** — Pydantic models validate the tool name and shape/types/limits of arguments. Valid shape alone does not grant permission.
 4. **Content inspection** — labels source and sensitivity, applies transparent initial rules, and returns PASS, SANITIZE, or HOLD FOR REVIEW. It is a risk signal, not the action authorization mechanism.
 5. **Policy and permission checks** — independently checks the allowlisted tool, caller permissions, resource scope, and operation limits. A prohibited action is blocked; human content review cannot override this.
 6. **Controlled executor** — maps approved tool names to fixed Python functions. No shell, arbitrary Python, model-provided SQL, or arbitrary path access.
-7. **Audit store** — records decisions and outcomes while minimizing sensitive content.
+7. **Audit store** — stores concise local security events while minimizing sensitive content. Complete execution timing/outcome coverage is still pending.
 8. **Local resources** — approved document corpus, SQLite records through fixed parameterized functions, and a simulated outbox.
 9. **Human review** — stores unresolved content and a reviewer decision, including the exact excerpt approved for use.
 
@@ -109,4 +109,10 @@ The gateway is an application-level control. It cannot contain arbitrary code ru
 
 ## Planned integration order
 
-Milestone 1 verifies local runtime/model feasibility; milestone 2 builds a minimal agent loop with one harmless tool; milestone 3 adds controlled tools; milestone 4 establishes the action gateway; milestone 5 adds content protection and review; milestone 6 integrates; milestone 7 adds API/dashboard; milestones 8–10 evaluate and finalize. Details and statuses are in the tracker.
+Milestones 1–5 are implemented and verified at their documented scope. The present checkpoint adds hybrid inspection and a local dashboard. Model-to-gateway integration, a FastAPI layer, evaluation, and final hardening remain in milestones 6–10. Details and statuses are in the tracker.
+
+## Current dashboard and hybrid inspection
+
+`app.py` is a local Streamlit dashboard that calls the real project services. It can inspect entered text, retrieve approved documents through the gateway, show held review items, and display stored security events.
+
+Prompt inspection combines input validation, Unicode normalization, invisible-character removal, encoded-payload checks, transparent instruction-pattern checks, and a structured advisory assessment from the local Qwen model. The local model returns `benign`, `suspicious`, or `high_risk` with exact suspicious spans. High-risk and uncertain results are held for review. A suspicious result is sanitized only if the returned span occurs exactly in the inspected text.

@@ -5,12 +5,12 @@ This is the source of truth for project progress. Statuses describe verified sta
 ## Progress summary
 
 - **Overall:** Milestones 0 through 5 complete.
-- **Current milestone:** Ready for Milestone 6 — integration and audit storage.
+- **Current milestone:** Hybrid prompt protection and local UI verification.
 - **Completed:** Repository audit, initial documentation, Python virtual environment, dependency installation, Ollama installation, model verification, structured tool-call check, bounded agent loop, fixed harmless tool, controlled local tools, action security gateway, content inspection, sanitization, and review queue.
-- **In progress:** None.
-- **Pending:** Model-to-gateway integration, persistent audit storage, API/dashboard, evaluation, final demo.
+- **In progress:** Hybrid detector evaluation and UI workflow refinement.
+- **Pending:** Model-to-gateway integration, complete execution audit, FastAPI API, evaluation, final demo.
 - **Blocked:** None identified. Model/hardware feasibility remains unverified, not blocked.
-- **Next recommended action:** Review and approve secure-path integration with persistent audit storage.
+- **Next recommended action:** Evaluate benign and adversarial cases through the local dashboard and expand measured coverage.
 
 ## Repository audit (2026-11-08)
 
@@ -50,7 +50,7 @@ This is the source of truth for project progress. Statuses describe verified sta
 - [x] Human review queue and excerpt-scoped decision implemented.
 - [ ] Audit records decisions, reasons, outcomes, and duration without needless sensitive content.
 - [ ] FastAPI integration implemented.
-- [ ] Streamlit dashboard displays actual application data.
+- [x] Streamlit dashboard displays actual application data.
 - [ ] Automated tests cover normal, malformed, unauthorized, traversal, injection, review, limits, and audit cases.
 - [ ] Baseline, sanitization-only, and full-middleware comparison performed.
 - [ ] Selected AgentDojo subset evaluated (scope/results documented).
@@ -101,3 +101,8 @@ A task is COMPLETED only when its implementation exists, works as intended, rele
 | 2026-11-08 | Added approved document tools, a parameterized SQLite record lookup, a simulated local outbox, synthetic sample data, and successful tests/demonstration. | Controlled tools |
 | 2026-11-08 | Added an action gateway with allowlists, argument validation, scopes, limits, fixed dispatch, and successful security tests/demonstration. | Action gateway |
 | 2026-11-08 | Added rule-based content inspection, sanitization, held-content review queue, and an end-to-end secure document retrieval demonstration. | Content protection |
+| 2026-11-12 | Added hybrid inspection, local Qwen assessment, concise SQLite events, and Streamlit UI. Verified 27 tests, UI rendering and blank-input interaction, and local server startup. Full detector evaluation remains pending. | Hybrid protection/UI |
+
+## Current UI checkpoint
+
+Run `python -m streamlit run app.py` from the project environment. Four tabs expose text analysis, gateway-protected retrieval, pending reviews, and persisted security events. The local assessor was checked with a real synthetic injection request; it returned high risk. The UI rendered without exceptions and held blank input. These checks establish functionality, not detector accuracy. The assessor can itself be manipulated, and obfuscated or unfamiliar attacks can evade current checks. Sanitized text remains untrusted. Complete execution-outcome and duration auditing remains pending.

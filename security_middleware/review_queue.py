@@ -84,6 +84,31 @@ class ReviewQueue:
             status="PENDING",
         )
 
+    def pending(self) -> list[ReviewItem]:
+        """Return currently unresolved review items for the local dashboard."""
+        with sqlite3.connect(self._database_path) as connection:
+            rows = connection.execute(
+                """
+                SELECT review_id, source_id, content_id, content, reason, status,
+                       reviewed_excerpt
+                FROM content_reviews
+                WHERE status = 'PENDING'
+                ORDER BY review_id DESC
+                """
+            ).fetchall()
+        return [
+            ReviewItem(
+                review_id=row[0],
+                source_id=row[1],
+                content_id=row[2],
+                content=row[3],
+                reason=row[4],
+                status=row[5],
+                reviewed_excerpt=row[6],
+            )
+            for row in rows
+        ]
+
     def decide(
         self,
         review_id: int,

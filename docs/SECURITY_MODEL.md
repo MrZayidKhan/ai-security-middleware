@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-The action gateway, fixed executor, argument validation, scopes, limits, content inspection, sanitization, and local review queue are implemented and tested. Persistent audit storage and model-to-gateway integration remain planned. The MVP is a local application-level gateway. It is not a hardened OS sandbox and does not defend a compromised host, administrator, Python process, or dependency.
+The action gateway, fixed executor, argument validation, scopes, limits, hybrid content inspection, sanitization, local review queue, concise event storage, and dashboard are implemented and tested at their current scope. Model-to-gateway integration, complete execution auditing, and evaluation remain pending. The MVP is a local application-level gateway. It is not a hardened OS sandbox and does not defend a compromised host, administrator, Python process, or dependency.
 
 ## Current enforced controls
 
@@ -11,7 +11,7 @@ The action gateway, fixed executor, argument validation, scopes, limits, content
 - Document IDs, record IDs, and draft recipients have separate permitted scopes.
 - Calls are limited per task and per repeated tool name.
 - The executor dispatches fixed functions only; it cannot run a proposed command, Python code, arbitrary SQL, or real message delivery.
-- Each gateway result is retained in memory until persistent audit logging is implemented.
+- Concise inspection and UI security events are persisted locally; gateway execution records are not yet fully unified with that event store.
 - Retrieved documents carry source, content, origin-trust, and sensitivity metadata before inspection.
 - Content may pass, be sanitized, or be held in the local review queue. Review decisions cannot change action permissions.
 
@@ -69,3 +69,9 @@ Rule-based detection cannot reliably identify every injection and may flag benig
 ## Out of scope
 
 Host/OS hardening, defending against a malicious administrator, arbitrary code containment, remote/cloud deployment, unrestricted network tools, real email delivery, full information-flow tracking, and claims of benchmark-level security without completed evaluation.
+
+## Hybrid prompt inspection
+
+The implemented inspector applies input-size and blank-content checks, canonical Unicode normalization, invisible-character removal, and encoded-payload checks before inspecting the readable content. It then combines transparent patterns with a structured local-model assessment. The model is an advisory signal and never grants access or overrides action policy.
+
+The system holds content if a high-risk directive, encoded malicious payload, high-risk model classification, or unresolved suspicious result is found. It sanitizes only known override lines or exact local-model spans. Sanitized content remains untrusted.

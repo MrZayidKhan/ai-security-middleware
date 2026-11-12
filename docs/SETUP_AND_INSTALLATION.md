@@ -2,7 +2,7 @@
 
 ## Status
 
-The Python environment is verified. Ollama installation and local-model verification are in progress.
+The Python environment, Ollama installation, and local model are verified for the current development setup.
 
 ## Verified Python setup
 
@@ -45,11 +45,11 @@ To repeat the project verification:
 .\.venv\Scripts\python.exe scripts\verify_ollama.py
 ```
 
-## Planned prerequisites
+## Prerequisites
 
-The confirmed guide will cover Windows, Git, VS Code, a compatible Python release, Ollama, and sufficient disk space for the chosen model. It will link only to official download pages and explain the purpose of each dependency.
+Use Windows, Git, a compatible Python release, Ollama, and enough disk space for the selected local model. This project uses synthetic local data and does not require cloud inference.
 
-## Planned setup flow
+## Setup flow
 
 1. Clone the repository and inspect its files.
 2. Create and activate a Python virtual environment.
@@ -60,7 +60,7 @@ The confirmed guide will cover Windows, Git, VS Code, a compatible Python releas
 7. Initialize synthetic sample data.
 8. Run the backend, interface, and test suite.
 
-Commands for the backend, dashboard, local data initialization, and tests will be added with the components that introduce them.
+The current runnable components are the local demonstrations, the Streamlit dashboard, and the Pytest suite. A FastAPI backend and automatic data-initialization command are not yet part of the project.
 
 ## Repository hygiene
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Milestones 2 through 5 have twenty-one automated tests and four verified local demonstrations. Model integration, persistent audit, and evaluation tests remain planned.
+The current suite has 27 automated tests and four verified local demonstrations. The hybrid assessor, audit store, and dashboard smoke path have also been checked. End-to-end model-to-gateway tests, broad accuracy evaluation, and complete human-review interaction coverage remain pending.
 
 ## Verified Milestone 2 results
 
@@ -53,3 +53,9 @@ When the system exists, compare the same task corpus across baseline agent, sani
 ## Current command
 
 Run `python -m pytest -q` from the activated project environment. Use `--basetemp .pytest-tmp` if the default Windows temporary directory is unavailable.
+
+## Hybrid inspection and UI checks
+
+The local model assessor was verified on a synthetic injection and returned `high_risk` with exact suspicious spans. The automated suite covers local-model signal handling with a fake assessor, Unicode obfuscation, encoded payloads, blank input, and local audit storage. The dashboard module compiles and imports; run it through Streamlit for interactive use.
+
+On 2026-11-12, 27 tests passed. Streamlit AppTest rendered all four tabs without exceptions and verified blank-input handling through the Analyze text button. The local Streamlit server started successfully on 127.0.0.1:8501. Broad accuracy, evasion resistance, and complete human-review UI coverage remain unverified.

@@ -2,7 +2,7 @@
 
 ## Current position
 
-Milestone 0 is in review. The repository has planning documentation only. No runtime code or dependencies have been added.
+Milestones 0 through 5 are implemented at their documented scope. The current checkpoint adds hybrid prompt inspection, concise local security events, and a working Streamlit dashboard. The next major gap is connecting model proposals to the gateway in one end-to-end path, followed by API and evaluation work.
 
 ## Delivery sequence
 
@@ -14,7 +14,7 @@ Milestone 0 is in review. The repository has planning documentation only. No run
 | 4 | Action security gateway | Milestone 3 | Invalid, unknown, and unauthorized requests are blocked before execution |
 | 5 | Content inspection, sanitization, and review queue | Milestone 4 | Content decisions preserve source metadata and review behavior is tested |
 | 6 | End-to-end integration and audit records | Milestones 2–5 | A complete request has matching decision and execution records |
-| 7 | FastAPI service and Streamlit dashboard | Milestone 6 | The interface shows actual stored data |
+| 7 | FastAPI service and dashboard hardening | Milestone 6 | API and interface show actual stored data without bypass |
 | 8 | Evaluation corpus and comparison | Milestone 6 | Reproducible measurements for baseline, sanitization-only, and full middleware |
 | 9 | Optional benchmark subset | Milestone 8 | Scope, method, and results are documented |
 | 10 | Final verification and demonstration | Milestone 8 | Fresh setup and repeatable demonstration succeed |
@@ -23,4 +23,4 @@ Milestone 0 is in review. The repository has planning documentation only. No run
 
 Each feature starts with a small contract: inputs, outputs, allowed resources, limits, and rejected cases. Implement the smallest useful version, add focused tests, then connect it to the next layer. The tracker records the result before work moves forward.
 
-The immediate next milestone is environment verification. It will determine compatible package versions and whether the local model can run acceptably on the available machine.
+The immediate next milestone is end-to-end integration: route model proposals through validation, the action gateway, controlled execution, content inspection, and accurate audit records. The current local model is available and the dashboard already exercises protected text and retrieval paths.

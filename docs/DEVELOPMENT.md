@@ -2,7 +2,7 @@
 
 ## Current state
 
-The repository includes a bounded local agent loop and one fixed demonstration tool. A Python 3.14 virtual environment, selected project dependencies, Ollama, and the local `qwen3.5:4b` model are installed and verified.
+The repository includes a bounded demonstration agent loop, controlled local tools, an action gateway, hybrid content protection, a local review queue, concise security-event storage, and a Streamlit dashboard. A Python 3.14 virtual environment, selected project dependencies, Ollama, and the local `qwen3.5:4b` model are installed and verified.
 
 ## Run and test Milestone 2
 
@@ -42,9 +42,9 @@ The gateway demonstration runs one allowed document read and one blocked message
 
 The demonstration shows a passing document, a sanitized instruction, and a held document with a local review ID.
 
-## Planned Windows setup
+## Windows setup
 
-Milestone 1 uses Python 3.14 with Pydantic v2. FastAPI, Streamlit, and Pydantic support this Python version. The exact setup and verification commands are in [SETUP_AND_INSTALLATION.md](SETUP_AND_INSTALLATION.md).
+The current setup uses Python 3.14 with Pydantic v2. FastAPI, Streamlit, and Pydantic support this Python version. The exact setup and verification commands are in [SETUP_AND_INSTALLATION.md](SETUP_AND_INSTALLATION.md).
 
 ## Development principles
 
@@ -71,3 +71,11 @@ Describe the threat and policy first. Add positive and negative examples, includ
 ## Git basics
 
 Work in the repository root `D:\Mini_project\ai-security-middleware`. Use the branch and review process in [TEAM_WORKFLOW.md](TEAM_WORKFLOW.md). Do not commit model files, local databases, credentials, or generated private content.
+
+## Run the local dashboard
+
+```powershell
+.\.venv\Scripts\python.exe -m streamlit run app.py
+```
+
+Keep Ollama running when using **Analyze text**, because that view includes a local-model assessment. Stop the dashboard with `Ctrl+C` in the PowerShell window that started it.
