@@ -116,11 +116,18 @@ class ReviewQueue:
         reviewed_excerpt: str | None = None,
     ) -> ReviewItem:
         """Record rejection or a specific excerpt approved for content use."""
-        if decision is ReviewDecision.APPROVED and not reviewed_excerpt:
+        if decision is ReviewDecision.APPROVED and (not reviewed_excerpt or not reviewed_excerpt.strip()):
             raise ValueError("An approved review requires a reviewed excerpt.")
 
         reviewed_at = datetime.now(timezone.utc).isoformat()
         with sqlite3.connect(self._database_path) as connection:
+            if decision is ReviewDecision.APPROVED:
+                original = connection.execute(
+                    'SELECT content FROM content_reviews WHERE review_id = ? AND status = ?',
+                    (review_id, 'PENDING'),
+                ).fetchone()
+                if original is None or reviewed_excerpt not in original[0]:
+                    raise ValueError('Approved excerpt must occur in the held original content.')
             cursor = connection.execute(
                 """
                 UPDATE content_reviews

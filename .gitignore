@@ -8,4 +8,8 @@ __pycache__/
 *.sqlite3
 *.db
 runtime_data/
+data/raw/
+data/processed/
+data/evaluation/
+models/
 

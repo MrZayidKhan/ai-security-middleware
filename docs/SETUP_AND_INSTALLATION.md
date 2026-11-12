@@ -65,3 +65,6 @@ The current runnable components are the local demonstrations, the Streamlit dash
 ## Repository hygiene
 
 Never commit credentials, local databases containing private data, model files, or `.env` files. The project will use synthetic data for demonstrations and security tests.
+# ML detector development checkpoint (2026-11-13)
+
+The local TF-IDF/Logistic Regression baseline now trains from pinned deepset data and saves an ignored local model artifact. Analyze text offers detector configuration selection and classifier probability/duration output. Required ML failure or uncertainty holds content; classification does not grant action permissions. Current verification: 30 tests pass, dependency consistency passes, and held-out binary precision/recall/F1 are 0.8824/0.7692/0.8219. These do not measure final pipeline effectiveness. See [ML training guide](ML_TRAINING.md) for commands, licensing, measured results, provisional thresholds and unfinished work. The prompt-injection module remains in development.

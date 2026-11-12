@@ -1,5 +1,7 @@
 # AI Agent Security Middleware
 
+Latest verification and prioritized improvements: [implementation review](docs/IMPLEMENTATION_REVIEW.md).
+
 College mini-project: **Development of AI Agent Security Middleware for Prompt Injection Detection and Unsafe Action Prevention**.
 
 ## Purpose
@@ -140,3 +142,6 @@ Open the local address Streamlit prints in PowerShell, usually `http://localhost
 - [Testing plan](docs/TESTING.md)
 - [Team workflow](docs/TEAM_WORKFLOW.md)
 - [Project tracker](docs/PROJECT_TRACKER.md)
+# ML detector development checkpoint (2026-11-13)
+
+The local TF-IDF/Logistic Regression baseline now trains from pinned deepset data and saves an ignored local model artifact. Analyze text offers detector configuration selection and classifier probability/duration output. Required ML failure or uncertainty holds content; classification does not grant action permissions. Current verification: 30 tests pass, dependency consistency passes, and held-out binary precision/recall/F1 are 0.8824/0.7692/0.8219. These do not measure final pipeline effectiveness. See [ML training guide](docs/ML_TRAINING.md) for commands, licensing, measured results, provisional thresholds and unfinished work. The prompt-injection module remains in development.

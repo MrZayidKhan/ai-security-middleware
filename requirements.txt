@@ -6,3 +6,8 @@ uvicorn[standard]>=0.35,<1
 # Local dashboard and test runner
 streamlit>=1.54,<2
 pytest>=8,<10
+
+# Local lightweight prompt-injection baseline
+scikit-learn>=1.5,<2
+joblib>=1.4,<2
+pyarrow>=20,<27

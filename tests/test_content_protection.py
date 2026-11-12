@@ -86,11 +86,15 @@ def test_review_requires_specific_excerpt_for_approval(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="reviewed excerpt"):
         queue.decide(item.review_id, ReviewDecision.APPROVED)
 
+    with pytest.raises(ValueError, match='reviewed excerpt'):
+        queue.decide(item.review_id, ReviewDecision.APPROVED, '   ')
+    with pytest.raises(ValueError, match='original content'):
+        queue.decide(item.review_id, ReviewDecision.APPROVED, 'Invented excerpt.')
     decided = queue.decide(
-        item.review_id, ReviewDecision.APPROVED, "Synthetic approved excerpt."
+        item.review_id, ReviewDecision.APPROVED, "confidential records"
     )
     assert decided.status == "APPROVED"
-    assert decided.reviewed_excerpt == "Synthetic approved excerpt."
+    assert decided.reviewed_excerpt == "confidential records"
 
 
 def test_local_model_high_risk_signal_holds_text() -> None:

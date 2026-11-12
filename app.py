@@ -10,6 +10,7 @@ import streamlit as st
 from security_middleware.action_gateway import ActionGateway
 from security_middleware.audit_log import AuditLog, initialize_audit_database
 from security_middleware.content_assessor import OllamaContentAssessor
+from security_middleware.ml_detector import MLDetector
 from security_middleware.content_protection import (
     ContentDecision,
     ContentEnvelope,
@@ -32,6 +33,21 @@ from security_middleware.secure_retrieval import SecureDocumentRetrieval
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 RUNTIME_ROOT = PROJECT_ROOT / "runtime_data"
+
+
+@st.cache_resource
+def classifier(artifact_stamp: tuple[int, int] | None) -> MLDetector:
+    return MLDetector(PROJECT_ROOT / 'models' / 'prompt_classifier.joblib')
+
+
+def current_classifier() -> MLDetector:
+    path = PROJECT_ROOT / 'models' / 'prompt_classifier.joblib'
+    try:
+        stat = path.stat()
+        stamp = (stat.st_mtime_ns, stat.st_size)
+    except FileNotFoundError:
+        stamp = None
+    return classifier(stamp)
 
 
 @st.cache_resource
@@ -67,6 +83,9 @@ def show_inspection(result) -> None:
     else:
         st.error("HOLD FOR REVIEW")
     st.write(result.reason)
+    st.caption(f'Inspection duration: {result.duration_ms:.1f} ms')
+    if result.detector_outputs:
+        st.dataframe([output.model_dump() for output in result.detector_outputs], hide_index=True)
     if result.model_assessment:
         st.caption(
             f"Local model assessment: {result.model_assessment.risk} — "
@@ -89,6 +108,7 @@ analysis_tab, retrieval_tab, review_tab, audit_tab = st.tabs(
 
 with analysis_tab:
     st.subheader("Prompt and content inspection")
+    mode = st.selectbox('Detection configuration', ['Rules + Qwen', 'Rules only', 'Rules + ML', 'Rules + ML + Qwen'])
     user_text = st.text_area("Text to inspect", height=220, max_chars=20_000)
     if st.button("Analyze text", type="primary"):
         envelope = ContentEnvelope(
@@ -98,7 +118,13 @@ with analysis_tab:
             data_sensitivity=DataSensitivity.PUBLIC,
             content=user_text,
         )
-        result = inspector.inspect(envelope)
+        selected_inspector = ContentInspector(
+            assessor=OllamaContentAssessor() if 'Qwen' in mode else None,
+            require_assessment_for_untrusted='Qwen' in mode,
+            detector=current_classifier() if 'ML' in mode else None,
+        )
+        with st.spinner('Inspecting content…'):
+            result = selected_inspector.inspect(envelope)
         audit_log.record(
             "content_inspection",
             result.reason,
@@ -107,13 +133,18 @@ with analysis_tab:
                 "content_id": envelope.content_id,
                 "finding_count": len(result.findings),
                 "model_risk": result.model_assessment.risk if result.model_assessment else None,
+                "configuration": mode,
+                "duration_ms": result.duration_ms,
             },
             decision=result.decision.value,
         )
         if result.decision is ContentDecision.HOLD_FOR_REVIEW:
             item = review_queue.create(envelope, result)
             st.info(f"Stored as review item #{item.review_id}.")
-        show_inspection(result)
+        st.session_state['last_inspection'] = (mode, user_text, result)
+    previous = st.session_state.get('last_inspection')
+    if previous and previous[:2] == (mode, user_text):
+        show_inspection(previous[2])
 
 with retrieval_tab:
     st.subheader("Gateway-protected document retrieval")

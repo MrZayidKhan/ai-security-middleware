@@ -6,6 +6,8 @@ import base64
 import re
 import unicodedata
 from enum import Enum
+from time import perf_counter
+from security_middleware.ml_detector import Detector, DetectorOutput
 
 from pydantic import BaseModel, Field
 
@@ -60,6 +62,8 @@ class ContentInspectionResult(BaseModel):
     reason: str
     model_assessment: ModelAssessment | None = None
     normalized_content: str | None = None
+    detector_outputs: list[DetectorOutput] = Field(default_factory=list)
+    duration_ms: float = 0
 
 
 class ContentInspector:
@@ -81,12 +85,57 @@ class ContentInspector:
         max_content_characters: int = 20_000,
         assessor: ContentAssessor | None = None,
         require_assessment_for_untrusted: bool = False,
+        detector: Detector | None = None,
     ) -> None:
         self._max_content_characters = max_content_characters
+        if max_content_characters < 1:
+            raise ValueError('Inspection size limit must be positive.')
         self._assessor = assessor
         self._require_assessment_for_untrusted = require_assessment_for_untrusted
+        self._detector = detector
 
     def inspect(self, envelope: ContentEnvelope) -> ContentInspectionResult:
+        """Aggregate advisory evidence without converting probability into spans."""
+        start = perf_counter()
+        result = self._inspect(envelope)
+        if result.decision is ContentDecision.SANITIZE:
+            remainder = result.sanitized_content or ''
+            _, findings = self._normalize(remainder)
+            if (self._data_exfiltration.search(remainder)
+                    or self._override_instruction.search(remainder)
+                    or any(item.severity == 'high' for item in findings)):
+                result.decision = ContentDecision.HOLD_FOR_REVIEW
+                result.sanitized_content = None
+                result.reason = 'Suspicious instructions remain after sanitization.'
+        if self._detector and result.normalized_content is not None:
+            output = self._detect(result.normalized_content)
+            result.detector_outputs.append(output)
+            if output.risk != 'benign':
+                prior_reason = result.reason if result.decision is ContentDecision.HOLD_FOR_REVIEW else ''
+                result.decision = ContentDecision.HOLD_FOR_REVIEW
+                result.sanitized_content = None
+                result.reason = (prior_reason + f' Classifier requires review: {output.risk}. {output.reason}').strip()
+            elif result.decision is ContentDecision.SANITIZE:
+                # A document-level benign prediction cannot certify the remainder.
+                residual = self._detect(result.sanitized_content or '')
+                result.detector_outputs.append(residual)
+                if residual.risk != 'benign':
+                    result.decision = ContentDecision.HOLD_FOR_REVIEW
+                    result.sanitized_content = None
+                    result.reason = 'Sanitized remainder could not pass classifier inspection.'
+        result.duration_ms = (perf_counter() - start) * 1000
+        return result
+
+    def _detect(self, content: str) -> DetectorOutput:
+        start = perf_counter()
+        try:
+            return DetectorOutput.model_validate(self._detector.detect(content))
+        except Exception:
+            return DetectorOutput(detector_name='configured-detector', version='unknown',
+                risk='unavailable', duration_ms=(perf_counter()-start)*1000,
+                reason='Configured detector failed to return valid evidence.')
+
+    def _inspect(self, envelope: ContentEnvelope) -> ContentInspectionResult:
         """Return PASS, SANITIZE, or HOLD based on visible rule matches."""
         validation_error = self._validate_content(envelope.content)
         if validation_error:
@@ -96,6 +145,10 @@ class ContentInspector:
             )
 
         normalized_content, normalization_findings = self._normalize(envelope.content)
+        validation_error = self._validate_content(normalized_content)
+        if validation_error:
+            return ContentInspectionResult(decision=ContentDecision.HOLD_FOR_REVIEW,
+                findings=normalization_findings, reason='After normalization: ' + validation_error)
         if any(finding.severity == "high" for finding in normalization_findings):
             return ContentInspectionResult(
                 decision=ContentDecision.HOLD_FOR_REVIEW,
@@ -157,6 +210,8 @@ class ContentInspector:
                         decision=ContentDecision.HOLD_FOR_REVIEW,
                         reason="Model concerns could not be isolated reliably.",
                         model_assessment=assessment,
+                        normalized_content=normalized_content,
+                        findings=normalization_findings,
                     )
                 sanitized_content = self._override_instruction.sub(
                     "[Suspicious instruction removed.]", model_cleaned
@@ -282,8 +337,22 @@ class ContentInspector:
 
     @staticmethod
     def _sanitize_model_spans(content: str, spans: list[str]) -> str | None:
-        if not spans or any(not span or span not in content for span in spans):
+        if not spans or any(not span.strip() or span not in content for span in spans):
             return None
+        # Locate every span against the original, then merge overlapping ranges.
+        # Sequential string replacement can destroy a later span's prefix.
+        ranges = []
         for span in spans:
-            content = content.replace(span, "[Suspicious instruction removed.]")
+            start = 0
+            while (start := content.find(span, start)) != -1:
+                ranges.append((start, start + len(span)))
+                start += 1
+        merged = []
+        for start, end in sorted(ranges):
+            if merged and start <= merged[-1][1]:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+            else:
+                merged.append((start, end))
+        for start, end in reversed(merged):
+            content = content[:start] + '[Suspicious instruction removed.]' + content[end:]
         return content

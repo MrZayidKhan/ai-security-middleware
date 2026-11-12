@@ -1,5 +1,7 @@
 # Testing Plan
 
+Latest verification (2026-11-13): 40 tests passed, source hashes and saved model test results reproduced, and dashboard interactions verified. See [implementation review](IMPLEMENTATION_REVIEW.md) for scope and remaining gaps. Earlier counts below are historical checkpoints.
+
 ## Status
 
 The current suite has 27 automated tests and four verified local demonstrations. The hybrid assessor, audit store, and dashboard smoke path have also been checked. End-to-end model-to-gateway tests, broad accuracy evaluation, and complete human-review interaction coverage remain pending.
@@ -59,3 +61,6 @@ Run `python -m pytest -q` from the activated project environment. Use `--basetem
 The local model assessor was verified on a synthetic injection and returned `high_risk` with exact suspicious spans. The automated suite covers local-model signal handling with a fake assessor, Unicode obfuscation, encoded payloads, blank input, and local audit storage. The dashboard module compiles and imports; run it through Streamlit for interactive use.
 
 On 2026-11-12, 27 tests passed. Streamlit AppTest rendered all four tabs without exceptions and verified blank-input handling through the Analyze text button. The local Streamlit server started successfully on 127.0.0.1:8501. Broad accuracy, evasion resistance, and complete human-review UI coverage remain unverified.
+# ML detector development checkpoint (2026-11-13)
+
+The local TF-IDF/Logistic Regression baseline now trains from pinned deepset data and saves an ignored local model artifact. Analyze text offers detector configuration selection and classifier probability/duration output. Required ML failure or uncertainty holds content; classification does not grant action permissions. Current verification: 30 tests pass, dependency consistency passes, and held-out binary precision/recall/F1 are 0.8824/0.7692/0.8219. These do not measure final pipeline effectiveness. See [ML training guide](ML_TRAINING.md) for commands, licensing, measured results, provisional thresholds and unfinished work. The prompt-injection module remains in development.
