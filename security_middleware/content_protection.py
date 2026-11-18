@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import re
 import unicodedata
+from typing import Literal
 from enum import Enum
 from time import perf_counter
 from security_middleware.ml_detector import Detector, DetectorOutput
@@ -43,6 +44,9 @@ class ContentEnvelope(BaseModel):
     origin_trust: OriginTrust
     data_sensitivity: DataSensitivity
     content: str
+    trusted_task: str | None = Field(default=None,max_length=4000,
+        description='Host-supplied original user task; never extracted from untrusted content.')
+    input_channel: Literal['direct_user','retrieved_data'] = 'retrieved_data'
 
 
 class InspectionFinding(BaseModel):
@@ -111,7 +115,7 @@ class ContentInspector:
             and any(f.rule_id in {'data-exfiltration-directive', 'encoded-suspicious-payload'}
                     for f in result.findings))
         if self._detector and result.normalized_content is not None and not deterministic_hold:
-            output = self._detect(result.normalized_content)
+            output = self._detect(result.normalized_content,envelope.trusted_task,envelope.input_channel)
             result.detector_outputs.append(output)
             uncertainty_resolved = (
                 output.risk == 'suspicious'
@@ -128,7 +132,7 @@ class ContentInspector:
                 result.reason = (prior_reason + f' Classifier requires review: {output.risk}. {output.reason}').strip()
             elif result.decision is ContentDecision.SANITIZE:
                 # A document-level benign prediction cannot certify the remainder.
-                residual = self._detect(result.sanitized_content or '')
+                residual = self._detect(result.sanitized_content or '',envelope.trusted_task,envelope.input_channel)
                 result.detector_outputs.append(residual)
                 if residual.risk != 'benign':
                     result.decision = ContentDecision.HOLD_FOR_REVIEW
@@ -137,10 +141,16 @@ class ContentInspector:
         result.duration_ms = (perf_counter() - start) * 1000
         return result
 
-    def _detect(self, content: str) -> DetectorOutput:
+    def _detect(self, content: str, trusted_task: str | None = None, input_channel='retrieved_data') -> DetectorOutput:
         start = perf_counter()
         try:
-            return DetectorOutput.model_validate(self._detector.detect(content))
+            contextual=getattr(self._detector,'detect_with_context',None)
+            envelope_detector=getattr(self._detector,'detect_envelope',None)
+            if callable(envelope_detector):
+                output=envelope_detector(content,trusted_task,input_channel)
+            else:
+                output=contextual(content,trusted_task) if callable(contextual) else self._detector.detect(content)
+            return DetectorOutput.model_validate(output)
         except Exception:
             return DetectorOutput(detector_name='configured-detector', version='unknown',
                 risk='unavailable', duration_ms=(perf_counter()-start)*1000,

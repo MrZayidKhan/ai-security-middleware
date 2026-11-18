@@ -37,7 +37,7 @@ class SecureDocumentRetrieval:
         self._inspector = inspector
         self._review_queue = review_queue
 
-    def retrieve(self, task_id: str, document_id: str) -> SecureRetrievalResult:
+    def retrieve(self, task_id: str, document_id: str, *, trusted_task: str | None = None) -> SecureRetrievalResult:
         """Authorize, read, inspect, and conditionally hold one document."""
         action = self._gateway.handle(
             {
@@ -55,6 +55,7 @@ class SecureDocumentRetrieval:
             origin_trust=OriginTrust.UNTRUSTED,
             data_sensitivity=DataSensitivity.PUBLIC,
             content=action.result["content"],
+            trusted_task=trusted_task,
         )
         inspection = self._inspector.inspect(envelope)
         # Never expose the executor's raw document through this public action

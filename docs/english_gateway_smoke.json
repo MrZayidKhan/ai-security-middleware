@@ -1,0 +1,44 @@
+{
+  "service_health": {
+    "service": "prompt-security-middleware",
+    "status": "running",
+    "detectors": "rules+english-contextual-verifier",
+    "upstream_checked": false
+  },
+  "cases": [
+    {
+      "case": "direct",
+      "http_status": 403,
+      "request_id": "09738e4a-99d8-4d9a-8dfb-81e63c861400",
+      "answering_model_forwarded": false,
+      "events": [
+        "middleware_inspection"
+      ],
+      "passed": true
+    },
+    {
+      "case": "indirect",
+      "http_status": 403,
+      "request_id": "a5b6f93d-43ea-4778-b2c8-45cabd653061",
+      "answering_model_forwarded": false,
+      "events": [
+        "middleware_inspection"
+      ],
+      "passed": true
+    },
+    {
+      "case": "benign",
+      "http_status": 200,
+      "request_id": "c27b94c3-e66d-400d-bb0c-034b24eae262",
+      "answering_model_forwarded": true,
+      "events": [
+        "middleware_outcome",
+        "middleware_forward",
+        "middleware_inspection"
+      ],
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "backend": "rules+english-contextual-verifier"
+}

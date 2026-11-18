@@ -63,6 +63,26 @@ def fresh_cases():
     return [(t,0,k) for t,k in benign]+[(t,1,k) for t,k in attacks]
 
 
+def save_advisory_profile(report):
+    """Retain the tested review operating point; do not promote failed calibration."""
+    candidate=dict(revision=REVISION,window_tokens=report['selected_window'],
+                   overlap_tokens=64 if report['selected_window']==512 else 256,
+                   review_threshold=report['selected_threshold'],
+                   high_risk_threshold=max(.95,report['selected_threshold']),
+                   mode='diagnostic-only',automatic_blocking_approved=False)
+    (DEST/'calibration_candidate.json').write_text(json.dumps(candidate,indent=2),encoding='utf-8')
+    profile=dict(revision=REVISION,window_tokens=512,overlap_tokens=64,review_threshold=.5,
+                 high_risk_threshold=.9,mode='advisory',automatic_blocking_approved=False,
+                 recommendation='Additional review evidence only; a negative prediction does not authorize actions.',
+                 calibration_candidate_promoted=False)
+    (DEST/'advisory_profile.json').write_text(json.dumps(profile,indent=2),encoding='utf-8')
+    report['recommendation']='Advisory/review pilot only using the original tested 512-token profile; not a sole defense or unattended blocking gate.'
+    report['calibration_candidate_promoted']=False
+    report['advisory_profile']=profile
+    (ROOT/'docs/horizon_readiness.json').write_text(json.dumps(report,indent=2,ensure_ascii=False),encoding='utf-8')
+    return profile
+
+
 def main():
     pools,_=load()
     rng=random.Random(18112026)
@@ -129,9 +149,7 @@ def main():
     report['default_promoted']=False
     output=ROOT/'docs/horizon_readiness.json'
     output.write_text(json.dumps(report,indent=2,ensure_ascii=False),encoding='utf-8')
-    profile=dict(revision=REVISION,window_tokens=int(selected),overlap_tokens=64 if selected=='512' else 256,
-                 review_threshold=threshold,high_risk_threshold=max(.95,threshold),mode='advisory',automatic_blocking_approved=False)
-    (ROOT/'models/pretrained/horizon-small/advisory_profile.json').write_text(json.dumps(profile,indent=2),encoding='utf-8')
+    profile=save_advisory_profile(report)
     print('Stress',json.dumps(report['stress_metrics']),flush=True)
     print('Profile',json.dumps(profile),flush=True)
 

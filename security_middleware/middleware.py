@@ -55,13 +55,19 @@ class PromptSecurityMiddleware:
         self._inspector = inspector
         self._inspect_roles = inspect_roles
 
-    def before_model(self, messages: list[ChatMessage]) -> ScreenedContext:
+    def before_model(self, messages: list[ChatMessage], *, retrieved_message_indices: frozenset[int] = frozenset()) -> ScreenedContext:
         """Inspect every configured message and return a safe model context."""
         released: list[ChatMessage] = []
         decisions: list[ContentDecision] = []
         held_ids: list[str] = []
+        current_task: str | None = None
+        if any(index<0 or index>=len(messages) for index in retrieved_message_indices):
+            raise ValueError('Retrieved-message index outside context')
 
-        for message in messages:
+        for index,message in enumerate(messages):
+            is_data=message.role!='user' or index in retrieved_message_indices
+            if not is_data:
+                current_task=message.content
             if message.role not in self._inspect_roles:
                 released.append(message.model_copy(deep=True))
                 continue
@@ -73,6 +79,8 @@ class PromptSecurityMiddleware:
                     origin_trust=OriginTrust.UNTRUSTED,
                     data_sensitivity=DataSensitivity.PUBLIC,
                     content=message.content,
+                    trusted_task=current_task if is_data and current_task is not None and len(current_task)<=4000 else None,
+                    input_channel='retrieved_data' if is_data else 'direct_user',
                 )
             )
             decisions.append(result.decision)
@@ -104,6 +112,7 @@ class PromptSecurityMiddleware:
         *,
         source_id: str = "model-input",
         data_sensitivity: DataSensitivity = DataSensitivity.PUBLIC,
+        trusted_task: str | None = None,
     ) -> ScreenedContext:
         """Convenience entry point for one user or retrieved text payload."""
         result = self._inspector.inspect(
@@ -113,6 +122,8 @@ class PromptSecurityMiddleware:
                 origin_trust=OriginTrust.UNTRUSTED,
                 data_sensitivity=data_sensitivity,
                 content=content,
+                trusted_task=trusted_task,
+                input_channel='retrieved_data' if trusted_task is not None else 'direct_user',
             )
         )
         if result.decision is ContentDecision.HOLD_FOR_REVIEW:

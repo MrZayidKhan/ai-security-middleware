@@ -29,11 +29,15 @@ class OllamaClient:
         base_url: str = "http://127.0.0.1:11434",
         timeout_seconds: int = 90,
         response_format: dict[str, Any] | None = None,
+        generation_options: dict[str, Any] | None = None,
+        system_prompt: str | None = None,
     ) -> None:
         self._model_name = model_name
         self._chat_url = f"{base_url.rstrip('/')}/api/chat"
         self._timeout_seconds = timeout_seconds
         self._response_format = response_format
+        self._generation_options = dict(generation_options or {})
+        self._system_prompt = system_prompt
 
     def chat(
         self, messages: list[ChatMessage], tools: list[dict[str, object]]
@@ -46,9 +50,13 @@ class OllamaClient:
             "messages": [message.model_dump(exclude_none=True) for message in messages],
             "tools": tools,
         }
+        if self._system_prompt is not None:
+            payload['messages'].insert(0, {'role':'system','content':self._system_prompt})
         if self._response_format is not None:
             payload['format'] = self._response_format
             payload['options'] = {'temperature': 0}
+        if self._generation_options:
+            payload.setdefault('options', {}).update(self._generation_options)
         request = Request(
             self._chat_url,
             data=json.dumps(payload).encode("utf-8"),

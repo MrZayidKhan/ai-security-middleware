@@ -48,7 +48,7 @@ class ChatRequest(BaseModel):
         return self
 
 
-def create_app(inspector=None, client=None, audit=None) -> FastAPI:
+def create_app(inspector=None, client=None, audit=None, *, detector_label='rules+required-local-qwen') -> FastAPI:
     app = FastAPI(title='Local prompt security middleware', version='0.1.0')
     scanner = inspector or ContentInspector(assessor=OllamaContentAssessor(),
                                           require_assessment_for_untrusted=True)
@@ -97,7 +97,7 @@ def create_app(inspector=None, client=None, audit=None) -> FastAPI:
     @app.get('/health')
     def health():
         return {'service': 'prompt-security-middleware', 'status': 'running',
-                'detectors': 'rules+required-local-qwen', 'upstream_checked': False}
+                'detectors': detector_label, 'upstream_checked': False}
 
     @app.post('/api/chat')
     def chat(payload: ChatRequest):

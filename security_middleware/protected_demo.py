@@ -41,7 +41,8 @@ def run_protected_demo(task: str, context: str, inspector: ContentInspector, cli
     messages = [ChatMessage(role='user', content=task)]
     if context:
         messages.append(ChatMessage(role='user', content='Retrieved untrusted context:\n' + context))
-    screened = PromptSecurityMiddleware(inspector).before_model(messages)
+    screened = PromptSecurityMiddleware(inspector).before_model(messages,
+        retrieved_message_indices=frozenset({1}) if context else frozenset())
     receipt = ForwardingReceipt(request_id=str(uuid4()), decision=screened.decision.value,
         content_decisions=[item.value for item in screened.content_decisions], reason=screened.reason)
     if screened.decision is ModelContextDecision.BLOCKED:
@@ -66,7 +67,7 @@ def run_reviewed_demo(task: str, review_id: int, queue: ReviewQueue,
     if screened_task.decision is ModelContextDecision.BLOCKED:
         receipt.reason = screened_task.reason
         return receipt
-    inspected = inspector.inspect(approved)
+    inspected = inspector.inspect(approved.model_copy(update={'trusted_task':task}))
     receipt.content_decisions.append(inspected.decision.value)
     if inspected.decision is ContentDecision.HOLD_FOR_REVIEW or inspected.sanitized_content is None:
         receipt.reason = inspected.reason

@@ -1,0 +1,250 @@
+{
+  "language": "English",
+  "backend": "local-semantic-verifier",
+  "example_file_sha256": "90cb9f02a3f8df4b5b99e43a7da683482267487158bdf17f7e7386082a13cc48",
+  "policy_sha256": "b881eed59d4ba589cf5a0dd4c4c4fea3e24ea844f6361f6eb68a6d4363174c4b",
+  "cases": [
+    {
+      "id": "direct-01",
+      "type": "direct",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 6623.963200000048,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "direct-02",
+      "type": "direct",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 7714.684600000055,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "direct-03",
+      "type": "direct",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 8636.756900000022,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "direct-04",
+      "type": "direct",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 8110.320500000057,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "direct-05",
+      "type": "direct",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 7819.277399999919,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "direct-06",
+      "type": "direct",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 9988.176899999984,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "indirect-01",
+      "type": "indirect",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 13469.518999999991,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "indirect-02",
+      "type": "indirect",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 14503.38320000003,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "indirect-03",
+      "type": "indirect",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 10598.462899999959,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "indirect-04",
+      "type": "indirect",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 12356.405699999981,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "indirect-05",
+      "type": "indirect",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 13293.61890000007,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "indirect-06",
+      "type": "indirect",
+      "label": 1,
+      "prediction": 1,
+      "risk": "high_risk",
+      "duration_ms": 12205.017399999975,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-direct-01",
+      "type": "direct",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 6791.926900000021,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-direct-02",
+      "type": "direct",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 9373.278099999992,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-direct-03",
+      "type": "direct",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 9258.303700000055,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-direct-04",
+      "type": "direct",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 11679.235899999981,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-direct-05",
+      "type": "direct",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 7275.697399999899,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-direct-06",
+      "type": "direct",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 8542.37230000001,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-indirect-01",
+      "type": "indirect",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 15513.74080000005,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-indirect-02",
+      "type": "indirect",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 15380.322399999954,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-indirect-03",
+      "type": "indirect",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 8820.129800000017,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-indirect-04",
+      "type": "indirect",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 6972.17969999997,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-indirect-05",
+      "type": "indirect",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 6771.802999999977,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    },
+    {
+      "id": "benign-indirect-06",
+      "type": "indirect",
+      "label": 0,
+      "prediction": 0,
+      "risk": "benign",
+      "duration_ms": 6254.412399999978,
+      "reason": "Structured local semantic verdict; no probability calibration, spans, or action authority."
+    }
+  ],
+  "complete": true,
+  "limitations": [
+    "24 authored diagnostic examples, not an independent production benchmark."
+  ],
+  "metrics": {
+    "n": 24,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "confusion_matrix": [
+      [
+        12,
+        0
+      ],
+      [
+        0,
+        12
+      ]
+    ],
+    "false_positive_rate": 0.0,
+    "false_negative_rate": 0.0,
+    "pr_auc": null,
+    "roc_auc": null
+  },
+  "unavailable": 0
+}

@@ -93,6 +93,9 @@ benign false positives prevent default automatic-blocking promotion. The adapter
 is available for explicit advisory evaluation; the production default is unchanged.
 No PIGuard download was needed in this step.
 
+Further context/calibration tests and the controlled-pilot verdict are documented
+in `docs/HORIZON_READINESS.md`; the staged model is not ready for unattended blocking.
+
 Verification: six detector tests passed. A real-model adapter smoke check matched
 the evaluator probability within 1e-6 and confirmed empty/oversized inputs return
 `unavailable`. Full extended report has `complete: true`.

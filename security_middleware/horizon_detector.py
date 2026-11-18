@@ -19,6 +19,18 @@ class HorizonDetector:
     Load one instance per service. Keep disabled in production until appropriate
     deployment validation. A flag cannot establish which span can be removed.
     """
+    @classmethod
+    def from_advisory_profile(cls, model_directory: Path):
+        """Load a locally evaluated operating point for the pinned model."""
+        profile = json.loads((model_directory/'advisory_profile.json').read_text(encoding='utf-8'))
+        if profile.get('revision') != REVISION or profile.get('mode') != 'advisory':
+            raise ValueError('Profile does not match the pinned advisory model')
+        if profile.get('automatic_blocking_approved') is not False:
+            raise ValueError('This profile is restricted to advisory operation')
+        return cls(model_directory,review_threshold=profile['review_threshold'],
+                   high_risk_threshold=profile['high_risk_threshold'],
+                   window_tokens=profile['window_tokens'],overlap_tokens=profile['overlap_tokens'])
+
     def __init__(self, model_directory: Path, review_threshold=.5, high_risk_threshold=.9,
                  window_tokens=512, overlap_tokens=64):
         if not 0 <= review_threshold <= high_risk_threshold <= 1:

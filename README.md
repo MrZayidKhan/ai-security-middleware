@@ -17,7 +17,16 @@ Keep Ollama running with `qwen3.5:4b` installed. Start the middleware:
 .\.venv\Scripts\python.exe -m scripts.run_middleware
 ```
 
-Send supported agent requests to `http://127.0.0.1:8787/api/chat` instead of Ollama directly. Open `http://127.0.0.1:8787/docs` for interactive API documentation. In another terminal start the dashboard:
+Send supported agent requests to `http://127.0.0.1:8787/api/chat` instead of Ollama directly. Open `http://127.0.0.1:8787/docs` for interactive API documentation.
+
+For the separately tested English contextual verifier, start with
+`.\.venv\Scripts\python.exe -m scripts.run_middleware --detector english-verifier`.
+Use the [application connection guide](docs/APPLICATION_CONNECTION_ENGLISH.md)
+and [English test results](docs/ENGLISH_VERIFIER_READINESS.md). The supplied
+`MiddlewareChatClient` handles the gateway's limited protocol without bypass fallback.
+The dashboard is optional for viewing logs; the HTTP service performs inspection.
+
+In another terminal, start the dashboard:
 
 ```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --browser.gatherUsageStats false
