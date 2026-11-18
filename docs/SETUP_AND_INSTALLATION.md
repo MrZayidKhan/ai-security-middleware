@@ -60,7 +60,7 @@ Use Windows, Git, a compatible Python release, Ollama, and enough disk space for
 7. Initialize synthetic sample data.
 8. Run the backend, interface, and test suite.
 
-The current runnable components are the local demonstrations, the Streamlit dashboard, and the Pytest suite. A FastAPI backend and automatic data-initialization command are not yet part of the project.
+The runnable components are the demonstrations, Streamlit dashboard, local FastAPI text middleware and Pytest suite. Run `python -m scripts.run_middleware` from the environment; see [middleware usage](MIDDLEWARE_USAGE.md). Install `requirements-test.txt` for HTTP integration tests. Runtime databases initialize automatically; model weights remain a separate local prerequisite.
 
 ## Repository hygiene
 

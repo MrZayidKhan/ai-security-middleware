@@ -1,0 +1,4 @@
+# Optional CPU-only pretrained semantic evaluation tools.
+-r requirements.txt
+onnxruntime==1.32.0
+tokenizers==0.23.3

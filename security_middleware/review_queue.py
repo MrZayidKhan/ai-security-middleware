@@ -9,7 +9,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from security_middleware.content_protection import ContentEnvelope, ContentInspectionResult
+from security_middleware.content_protection import (ContentEnvelope, ContentInspectionResult,
+    OriginTrust, DataSensitivity)
 
 
 class ReviewDecision(str, Enum):
@@ -25,6 +26,8 @@ class ReviewItem(BaseModel):
     reason: str
     status: str
     reviewed_excerpt: str | None = None
+    origin_trust: OriginTrust = OriginTrust.UNTRUSTED
+    data_sensitivity: DataSensitivity = DataSensitivity.CONFIDENTIAL
 
 
 def initialize_review_database(database_path: Path) -> None:
@@ -46,6 +49,13 @@ def initialize_review_database(database_path: Path) -> None:
             )
             """
         )
+        # Existing rows lack reliable labels: migrate conservatively without
+        # rewriting their text or decisions. New inserts supply explicit labels.
+        columns = {row[1] for row in connection.execute('PRAGMA table_info(content_reviews)')}
+        if 'origin_trust' not in columns:
+            connection.execute("ALTER TABLE content_reviews ADD COLUMN origin_trust TEXT NOT NULL DEFAULT 'untrusted'")
+        if 'data_sensitivity' not in columns:
+            connection.execute("ALTER TABLE content_reviews ADD COLUMN data_sensitivity TEXT NOT NULL DEFAULT 'confidential'")
 
 
 class ReviewQueue:
@@ -63,8 +73,8 @@ class ReviewQueue:
             cursor = connection.execute(
                 """
                 INSERT INTO content_reviews
-                    (source_id, content_id, content, reason, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
+                    (source_id, content_id, content, reason, status, created_at, origin_trust, data_sensitivity)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     envelope.source_id,
@@ -73,6 +83,8 @@ class ReviewQueue:
                     inspection.reason,
                     "PENDING",
                     created_at,
+                    envelope.origin_trust.value,
+                    envelope.data_sensitivity.value,
                 ),
             )
         return ReviewItem(
@@ -82,6 +94,8 @@ class ReviewQueue:
             content=envelope.content,
             reason=inspection.reason,
             status="PENDING",
+            origin_trust=envelope.origin_trust,
+            data_sensitivity=envelope.data_sensitivity,
         )
 
     def pending(self) -> list[ReviewItem]:
@@ -90,7 +104,7 @@ class ReviewQueue:
             rows = connection.execute(
                 """
                 SELECT review_id, source_id, content_id, content, reason, status,
-                       reviewed_excerpt
+                       reviewed_excerpt, origin_trust, data_sensitivity
                 FROM content_reviews
                 WHERE status = 'PENDING'
                 ORDER BY review_id DESC
@@ -105,6 +119,7 @@ class ReviewQueue:
                 reason=row[4],
                 status=row[5],
                 reviewed_excerpt=row[6],
+                origin_trust=row[7], data_sensitivity=row[8],
             )
             for row in rows
         ]
@@ -141,7 +156,7 @@ class ReviewQueue:
             row = connection.execute(
                 """
                 SELECT review_id, source_id, content_id, content, reason, status,
-                       reviewed_excerpt
+                       reviewed_excerpt, origin_trust, data_sensitivity
                 FROM content_reviews WHERE review_id = ?
                 """,
                 (review_id,),
@@ -155,4 +170,22 @@ class ReviewQueue:
             reason=row[4],
             status=row[5],
             reviewed_excerpt=row[6],
+            origin_trust=row[7], data_sensitivity=row[8],
         )
+
+    def approved_content(self, review_id: int) -> ContentEnvelope:
+        """Release only a decided excerpt; approval never upgrades origin trust.
+
+        This is a local reviewer API, not authentication or tool authorization.
+        Caller must intentionally request this release. No automatic model retry.
+        """
+        with sqlite3.connect(self._database_path) as connection:
+            row = connection.execute(
+                'SELECT source_id, content_id, content, status, reviewed_excerpt, data_sensitivity '
+                'FROM content_reviews WHERE review_id = ?', (review_id,),
+            ).fetchone()
+        if (row is None or row[3] != 'APPROVED' or not row[4]
+                or not row[4].strip() or row[4] not in row[2]):
+            raise ValueError('No valid approved excerpt is available for release.')
+        return ContentEnvelope(source_id=row[0], content_id=row[1],
+            origin_trust=OriginTrust.UNTRUSTED, data_sensitivity=row[5], content=row[4])

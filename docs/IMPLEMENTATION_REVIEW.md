@@ -2,13 +2,15 @@
 
 ## Verification
 
-Baseline: 30 passing tests. After fixes: 40 passing tests. Dependency consistency passed. Both downloaded sources match recorded SHA-256 hashes. Saved splits contain 464/99/99 examples with no exact-text or recorded duplicate-group overlap. Reloaded model reproduces test confusion matrix [[56,4],[9,30]]. This does not rule out undetected semantic/template overlap.
+Baseline: 30 passing tests. After fixes: 46 passing tests. Dependency consistency passed. Both downloaded sources match recorded SHA-256 hashes. Saved splits contain 464/99/99 examples with no exact-text or recorded duplicate-group overlap. Reloaded model reproduces test confusion matrix [[56,4],[9,30]]. This does not rule out undetected semantic/template overlap.
 
 Rules and rules+ML were rerun on ten synthetic carriers: rules recall .4, false-positive rate .2; rules+ML recall 1.0, false-positive rate 1.0. Holding everything is not effective detection. Earlier binary classifier precision/recall/F1 (.8824/.7692/.8219) describe a different decision boundary from the deployed policy.
 
 Streamlit AppTest verified four tabs, benign rules PASS, result persistence on rerun, stale-result clearing after a mode change, and real ML HOLD without exceptions. This is interaction testing, not browser visual inspection. Full Qwen comparison and memory benchmarking were not rerun in this review.
 
 ## Fixes
+
+- Added a reusable model-facing middleware boundary and secure chat adapter. The agent loop can now screen user/tool context before the underlying model client is called; held context produces no model request.
 
 - Revalidate normalized input for blankness and size expansion.
 - Merge original offsets when removing repeated/overlapping model spans; reject whitespace-only spans.

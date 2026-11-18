@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Protocol
 
 from security_middleware.demo_tools import DemoToolExecutor, project_status_tool_definition
+from security_middleware.middleware import PromptSecurityMiddleware, SecureChatClient
 from security_middleware.models import AgentResult, ChatMessage
 
 
@@ -20,11 +21,16 @@ class ChatClient(Protocol):
 class AgentLoop:
     """Ask the model for proposals and return after a bounded number of tool rounds."""
 
-    def __init__(self, client: ChatClient, max_tool_rounds: int = 3) -> None:
+    def __init__(
+        self,
+        client: ChatClient,
+        max_tool_rounds: int = 3,
+        middleware: PromptSecurityMiddleware | None = None,
+    ) -> None:
         if max_tool_rounds < 1:
             raise ValueError("max_tool_rounds must be at least 1.")
 
-        self._client = client
+        self._client = SecureChatClient(client, middleware) if middleware else client
         self._max_tool_rounds = max_tool_rounds
         self._executor = DemoToolExecutor()
         self._tools = [project_status_tool_definition()]

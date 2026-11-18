@@ -1,0 +1,420 @@
+{
+  "files": [
+    {
+      "file": "deepset__prompt-injections\\data\\test-00000-of-00001-701d16158af87368.parquet",
+      "container": "list",
+      "rows": 116,
+      "columns": [
+        "text",
+        "label"
+      ],
+      "labels": {
+        "1": 60,
+        "0": 56
+      },
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 116,
+      "duplicate_rows": 0
+    },
+    {
+      "file": "deepset__prompt-injections\\data\\train-00000-of-00001-9564e8b05b4757ab.parquet",
+      "container": "list",
+      "rows": 546,
+      "columns": [
+        "text",
+        "label"
+      ],
+      "labels": {
+        "0": 343,
+        "1": 203
+      },
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 546,
+      "duplicate_rows": 0
+    },
+    {
+      "file": "hendzh__PromptShield\\test.json",
+      "container": "list",
+      "rows": 23516,
+      "columns": [
+        "prompt",
+        "label"
+      ],
+      "labels": {
+        "0": 17030,
+        "1": 6486
+      },
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 23345,
+      "duplicate_rows": 171
+    },
+    {
+      "file": "hendzh__PromptShield\\train.json",
+      "container": "list",
+      "rows": 18909,
+      "columns": [
+        "prompt",
+        "label"
+      ],
+      "labels": {
+        "0": 9457,
+        "1": 9452
+      },
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 18786,
+      "duplicate_rows": 123
+    },
+    {
+      "file": "hendzh__PromptShield\\validation.json",
+      "container": "list",
+      "rows": 1000,
+      "columns": [
+        "prompt",
+        "label"
+      ],
+      "labels": {
+        "0": 497,
+        "1": 503
+      },
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 998,
+      "duplicate_rows": 2
+    },
+    {
+      "file": "leolee99__NotInject\\data\\NotInject_one-00000-of-00001.parquet",
+      "container": "list",
+      "rows": 113,
+      "columns": [
+        "prompt",
+        "word_list",
+        "category"
+      ],
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 113,
+      "duplicate_rows": 0
+    },
+    {
+      "file": "leolee99__NotInject\\data\\NotInject_three-00000-of-00001.parquet",
+      "container": "list",
+      "rows": 113,
+      "columns": [
+        "prompt",
+        "word_list",
+        "category"
+      ],
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 113,
+      "duplicate_rows": 0
+    },
+    {
+      "file": "leolee99__NotInject\\data\\NotInject_two-00000-of-00001.parquet",
+      "container": "list",
+      "rows": 113,
+      "columns": [
+        "prompt",
+        "word_list",
+        "category"
+      ],
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 113,
+      "duplicate_rows": 0
+    },
+    {
+      "file": "leolee99__NotInject\\data\\test-00000-of-00001.parquet",
+      "container": "list",
+      "rows": 113,
+      "columns": [
+        "prompt",
+        "word_list",
+        "category"
+      ],
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 113,
+      "duplicate_rows": 0
+    },
+    {
+      "file": "leolee99__NotInject\\data\\train-00000-of-00001.parquet",
+      "container": "list",
+      "rows": 113,
+      "columns": [
+        "prompt",
+        "word_list",
+        "category"
+      ],
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 113,
+      "duplicate_rows": 0
+    },
+    {
+      "file": "leolee99__NotInject\\data\\validation-00000-of-00001.parquet",
+      "container": "list",
+      "rows": 113,
+      "columns": [
+        "prompt",
+        "word_list",
+        "category"
+      ],
+      "empty_prompts": 0,
+      "unique_normalized_prompts": 113,
+      "duplicate_rows": 0
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\abstract\\index.json",
+      "container": "dict",
+      "rows": 2
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\code\\test.jsonl",
+      "container": "list",
+      "rows": 50,
+      "columns": [
+        "error",
+        "code",
+        "context",
+        "ideal",
+        "context_url",
+        "context_author_url"
+      ]
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\code\\train.jsonl",
+      "container": "list",
+      "rows": 50,
+      "columns": [
+        "error",
+        "code",
+        "context",
+        "ideal",
+        "context_url",
+        "context_author_url"
+      ]
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\code_attack_test.json",
+      "container": "dict",
+      "rows": 10
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\code_attack_train.json",
+      "container": "dict",
+      "rows": 10
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\email\\test.jsonl",
+      "container": "list",
+      "rows": 50,
+      "columns": [
+        "context",
+        "question",
+        "ideal"
+      ]
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\email\\train.jsonl",
+      "container": "list",
+      "rows": 50,
+      "columns": [
+        "context",
+        "question",
+        "ideal"
+      ]
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\qa\\index.json",
+      "container": "dict",
+      "rows": 2
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\table\\test.jsonl",
+      "container": "list",
+      "rows": 100,
+      "columns": [
+        "ideal",
+        "context",
+        "question"
+      ]
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\table\\train.jsonl",
+      "container": "list",
+      "rows": 900,
+      "columns": [
+        "ideal",
+        "context",
+        "question"
+      ]
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\text_attack_test.json",
+      "container": "dict",
+      "rows": 15
+    },
+    {
+      "file": "microsoft__BIPIA\\benchmark\\text_attack_train.json",
+      "container": "dict",
+      "rows": 15
+    },
+    {
+      "file": "reshabhs__SPML_Chatbot_Prompt_Injection\\spml_prompt_injection.csv",
+      "container": "list",
+      "rows": 16012,
+      "columns": [
+        "System Prompt",
+        "User Prompt",
+        "Prompt injection",
+        "Degree",
+        "Source"
+      ],
+      "labels": {
+        "1": 12542,
+        "0": 3470
+      },
+      "empty_prompts": 1,
+      "unique_normalized_prompts": 15914,
+      "duplicate_rows": 98
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\attacker_cases_dh.jsonl",
+      "container": "list",
+      "rows": 30,
+      "columns": [
+        "Attacker Tools",
+        "Modifed",
+        "Attacker Instruction",
+        "Expected Achievements",
+        "Attack Type"
+      ]
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\attacker_cases_ds.jsonl",
+      "container": "list",
+      "rows": 32,
+      "columns": [
+        "Attacker Tools",
+        "Modifed",
+        "Attacker Instruction",
+        "Expected Achievements",
+        "Attack Type"
+      ]
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\attacker_simulated_responses.json",
+      "container": "dict",
+      "rows": 2347
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\test_cases_dh_base.json",
+      "container": "list",
+      "rows": 510,
+      "columns": [
+        "Attacker Tools",
+        "Modifed",
+        "Attacker Instruction",
+        "Expected Achievements",
+        "Attack Type",
+        "User Tool",
+        "User Instruction",
+        "Tool Parameters",
+        "Tool Response Template",
+        "Thought",
+        "Tool Response"
+      ]
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\test_cases_dh_enhanced.json",
+      "container": "list",
+      "rows": 510,
+      "columns": [
+        "Attacker Tools",
+        "Modifed",
+        "Attacker Instruction",
+        "Expected Achievements",
+        "Attack Type",
+        "User Tool",
+        "User Instruction",
+        "Tool Parameters",
+        "Tool Response Template",
+        "Thought",
+        "Tool Response"
+      ]
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\test_cases_ds_base.json",
+      "container": "list",
+      "rows": 544,
+      "columns": [
+        "Attacker Tools",
+        "Modifed",
+        "Attacker Instruction",
+        "Expected Achievements",
+        "Attack Type",
+        "User Tool",
+        "User Instruction",
+        "Tool Parameters",
+        "Tool Response Template",
+        "Thought",
+        "Tool Response"
+      ]
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\test_cases_ds_enhanced.json",
+      "container": "list",
+      "rows": 544,
+      "columns": [
+        "Attacker Tools",
+        "Modifed",
+        "Attacker Instruction",
+        "Expected Achievements",
+        "Attack Type",
+        "User Tool",
+        "User Instruction",
+        "Tool Parameters",
+        "Tool Response Template",
+        "Thought",
+        "Tool Response"
+      ]
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\tools.json",
+      "container": "list",
+      "rows": 38,
+      "columns": [
+        "toolkit",
+        "category",
+        "name_for_model",
+        "name_for_human",
+        "description_for_model",
+        "description_for_human",
+        "tools"
+      ]
+    },
+    {
+      "file": "uiuc-kang-lab__InjecAgent\\data\\user_cases.jsonl",
+      "container": "list",
+      "rows": 17,
+      "columns": [
+        "User Tool",
+        "User Instruction",
+        "Tool Parameters",
+        "Tool Response Template",
+        "Thought",
+        "Level"
+      ]
+    }
+  ],
+  "unique_normalized_texts": 60028,
+  "prompts_present_in_multiple_files": 354,
+  "overlap_file_pairs": {
+    "deepset__prompt-injections\\data\\train-00000-of-00001-9564e8b05b4757ab.parquet|hendzh__PromptShield\\test.json": 1,
+    "hendzh__PromptShield\\train.json|hendzh__PromptShield\\validation.json": 14,
+    "leolee99__NotInject\\data\\NotInject_one-00000-of-00001.parquet|leolee99__NotInject\\data\\train-00000-of-00001.parquet": 113,
+    "leolee99__NotInject\\data\\NotInject_three-00000-of-00001.parquet|leolee99__NotInject\\data\\test-00000-of-00001.parquet": 113,
+    "leolee99__NotInject\\data\\NotInject_two-00000-of-00001.parquet|leolee99__NotInject\\data\\validation-00000-of-00001.parquet": 113
+  },
+  "limitations": [
+    "Exact normalized text audit only; semantic/template duplicates require a separate pass.",
+    "BIPIA contexts and attacks need reconstruction; InjecAgent cases need context-aware parsing.",
+    "NotInject alternate files overlap; retain one layout only.",
+    "Original test splits remain evaluation-only. No training performed."
+  ]
+}

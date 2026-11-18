@@ -40,7 +40,9 @@ def main():
         for i, (category, label, text) in enumerate(CASES):
             result = inspector.inspect(ContentEnvelope(source_id=category, content_id=str(i), origin_trust='untrusted', data_sensitivity='public', content=text))
             if (any(output.risk == 'unavailable' for output in result.detector_outputs)
-                    or (qwen and result.model_assessment is None)):
+                    or (qwen and result.model_assessment is None
+                        and not any(f.rule_id in {'data-exfiltration-directive', 'encoded-suspicious-payload'}
+                                    for f in result.findings))):
                 raise RuntimeError(f'{name}: required detector unavailable; no detection metrics published for this configuration.')
             results.append({'category': category, 'label': label, 'prediction': int(result.decision.value != 'PASS'),
                 'duration_ms': result.duration_ms, 'decision': result.decision.value, 'reason': result.reason})

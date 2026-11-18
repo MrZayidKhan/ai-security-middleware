@@ -39,6 +39,9 @@ def test_sanitized_document_returns_safe_replacement(retrieval: SecureDocumentRe
     assert result.inspection.decision is ContentDecision.SANITIZE
     assert "Suspicious instruction removed" in result.content_for_model
     assert result.review_id is None
+    assert result.action.result is None
+    assert result.released_content.content == result.content_for_model
+    assert result.released_content.origin_trust.value == 'untrusted'
 
 
 def test_high_risk_document_is_held_after_gateway_allows_read(
@@ -50,6 +53,8 @@ def test_high_risk_document_is_held_after_gateway_allows_read(
     assert result.inspection.decision is ContentDecision.HOLD_FOR_REVIEW
     assert result.content_for_model is None
     assert result.review_id is not None
+    assert result.action.result is None
+    assert result.released_content is None
 
 
 def test_invalid_document_id_is_blocked_before_content_inspection(

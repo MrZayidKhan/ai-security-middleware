@@ -1,6 +1,20 @@
 # Testing Plan
 
-Latest verification (2026-11-13): 40 tests passed, source hashes and saved model test results reproduced, and dashboard interactions verified. See [implementation review](IMPLEMENTATION_REVIEW.md) for scope and remaining gaps. Earlier counts below are historical checkpoints.
+Live local timing observation: one fresh Qwen assessment took 41,504 ms; an identical cached assessment on the same instance took 0.090 ms. A deterministic credential-exfiltration hold took 0.581 ms without inference. These are single observations, not throughput or percentile benchmarks. Cold/new content and answering-model generation remain expensive; cache benefits apply to exact repeats on a surviving instance.
+
+Current performance/refactoring checkpoint: 94 tests pass. New checks cover cache expiry/capacity, independent return values, distinct content keys, uncached invalid output and no assessor invocation for deterministic holds. Older counts below identify earlier checkpoints. These are functional tests, not general detection accuracy measurements.
+
+HTTP middleware verification: 86 tests passed in the verified execution environment. 16 API tests cover released/sanitized forwarding, attacks in all caller-controlled roles, unsupported fields/roles/models/streaming, size limits, browser-origin rejection, detector/storage/upstream failure, and concurrency. A real loopback HTTP request also returned an Ollama answer. The restricted runner stalled on HTTP tests; those runs were stopped and the suite rerun successfully outside that runner.
+
+Explicit review-continuation verification: 70 tests pass. Added zero-call checks for pending/rejected review, current-policy rejection of a malicious task or approved excerpt, and approved-only forwarding with provenance. Recording-client tests verify enforcement; no fresh live Qwen continuation was run in this checkpoint.
+
+Review-release verification: 65 tests pass. Added migration idempotence/content-preservation, label round-trip, approved-only excerpt release, rejected/missing/legacy-invalid refusal, and raw action-result suppression checks. Existing 62 tests remain passing.
+
+Latest middleware-policy verification: 62 tests passed. Live local rules+ML+Qwen assessment returned PASS for an educational photosynthesis request (ML probability .409, Qwen benign), and HOLD for a credential-exfiltration instruction. This two-case check verifies the intended policy, not general detector accuracy. Qwen response time was approximately 44 seconds and 19 seconds respectively.
+
+Protected-model checkpoint: 52 tests pass. Streamlit AppTest verified five tabs, zero answering-client calls for held context, and one call for released context using a patched client. See [manual test guide](MANUAL_TESTING.md) for current acceptance cases. These checks verify forwarding enforcement, not detection accuracy.
+
+Latest verification (2026-11-15): 46 tests passed, source hashes and saved model test results reproduced, model-boundary blocking verified, and dashboard rules-only interaction verified without exceptions. See [implementation review](IMPLEMENTATION_REVIEW.md) for scope and remaining gaps. Earlier counts below are historical checkpoints.
 
 ## Status
 

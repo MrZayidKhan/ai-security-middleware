@@ -21,6 +21,7 @@ class SecureRetrievalResult(BaseModel):
     inspection: ContentInspectionResult | None = None
     review_id: int | None = None
     content_for_model: str | None = None
+    released_content: ContentEnvelope | None = None
 
 
 class SecureDocumentRetrieval:
@@ -56,6 +57,9 @@ class SecureDocumentRetrieval:
             content=action.result["content"],
         )
         inspection = self._inspector.inspect(envelope)
+        # Never expose the executor's raw document through this public action
+        # result. Inspection evidence is diagnostic, not model context.
+        action = action.model_copy(update={'result': None}, deep=True)
         if inspection.decision is ContentDecision.HOLD_FOR_REVIEW:
             review_item = self._review_queue.create(envelope, inspection)
             return SecureRetrievalResult(
@@ -66,4 +70,5 @@ class SecureDocumentRetrieval:
             action=action,
             inspection=inspection,
             content_for_model=inspection.sanitized_content,
+            released_content=envelope.model_copy(update={'content': inspection.sanitized_content}),
         )

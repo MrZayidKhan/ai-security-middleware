@@ -107,10 +107,21 @@ class ContentInspector:
                 result.decision = ContentDecision.HOLD_FOR_REVIEW
                 result.sanitized_content = None
                 result.reason = 'Suspicious instructions remain after sanitization.'
-        if self._detector and result.normalized_content is not None:
+        deterministic_hold = (result.decision is ContentDecision.HOLD_FOR_REVIEW
+            and any(f.rule_id in {'data-exfiltration-directive', 'encoded-suspicious-payload'}
+                    for f in result.findings))
+        if self._detector and result.normalized_content is not None and not deterministic_hold:
             output = self._detect(result.normalized_content)
             result.detector_outputs.append(output)
-            if output.risk != 'benign':
+            uncertainty_resolved = (
+                output.risk == 'suspicious'
+                and result.model_assessment is not None
+                and result.model_assessment.risk == 'benign'
+                and result.decision is ContentDecision.PASS
+            )
+            if uncertainty_resolved:
+                result.reason += ' Advisory ML uncertainty was resolved by a benign Qwen assessment.'
+            elif output.risk != 'benign':
                 prior_reason = result.reason if result.decision is ContentDecision.HOLD_FOR_REVIEW else ''
                 result.decision = ContentDecision.HOLD_FOR_REVIEW
                 result.sanitized_content = None
@@ -156,12 +167,6 @@ class ContentInspector:
                 reason="Content contains an encoded suspicious payload.",
                 normalized_content=normalized_content,
             )
-        assessment = self._assess(normalized_content, envelope.origin_trust)
-        if isinstance(assessment, ContentInspectionResult):
-            assessment.findings.extend(normalization_findings)
-            assessment.normalized_content = normalized_content
-            return assessment
-
         exfiltration_matches = list(self._data_exfiltration.finditer(normalized_content))
         if exfiltration_matches:
             return ContentInspectionResult(
@@ -175,9 +180,14 @@ class ContentInspector:
                     for match in exfiltration_matches
                 ] + normalization_findings,
                 reason="Content contains an instruction to expose sensitive data.",
-                model_assessment=assessment,
                 normalized_content=normalized_content,
             )
+
+        assessment = self._assess(normalized_content, envelope.origin_trust)
+        if isinstance(assessment, ContentInspectionResult):
+            assessment.findings.extend(normalization_findings)
+            assessment.normalized_content = normalized_content
+            return assessment
 
         if assessment and assessment.risk == "high_risk":
             return ContentInspectionResult(

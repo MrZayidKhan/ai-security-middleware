@@ -1,147 +1,76 @@
 # AI Agent Security Middleware
 
-Latest verification and prioritized improvements: [implementation review](docs/IMPLEMENTATION_REVIEW.md).
+A local Python connector that inspects model-bound text before forwarding it to Ollama. It provides PASS, SANITIZE or HOLD decisions, a local HTTP gateway, a Streamlit dashboard, excerpt review and SQLite security events.
 
-College mini-project: **Development of AI Agent Security Middleware for Prompt Injection Detection and Unsafe Action Prevention**.
+## Start on Windows
 
-## Purpose
+From the repository root, create an environment if needed and install dependencies:
 
-This project will build a local security layer between an AI agent and a small set of approved tools. The model may propose an operation, but the application must validate and authorize it before execution. Retrieved text is treated as untrusted input and can be passed, sanitized, or held for review.
-
-The project has a working local security path and dashboard. See [the project tracker](docs/PROJECT_TRACKER.md) for verified status and acceptance criteria.
-
-## Intended architecture
-
-```mermaid
-flowchart TD
-  U[User interface] --> A[Local agent]
-  A --> P[Parse and validate proposal]
-  P --> G[Action security gateway]
-  G -->|Block| L[Audit record]
-  G -->|Allow| E[Controlled executor]
-  E --> L
-  E --> C[Content inspection of returned data]
-  C -->|Pass / sanitize| A
-  C -->|Hold| H[Human review queue]
-  H --> A
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-test.txt
 ```
 
-The model will not receive direct access to the filesystem, database, or message delivery. Initial tools are intended to search/read approved documents, query records through fixed functions, and save drafts to a simulated local outbox. This is an application-level gateway, not an operating-system sandbox.
+Keep Ollama running with `qwen3.5:4b` installed. Start the middleware:
 
-## Intended technology stack
+```powershell
+.\.venv\Scripts\python.exe -m scripts.run_middleware
+```
 
-Python, Ollama with `qwen3.5:4b`, Pydantic, FastAPI, SQLite, Streamlit, and Pytest. The local environment, model, security components, and dashboard are implemented for the current checkpoint. FastAPI integration, full model-to-tool integration, and measured detector evaluation remain pending.
+Send supported agent requests to `http://127.0.0.1:8787/api/chat` instead of Ollama directly. Open `http://127.0.0.1:8787/docs` for interactive API documentation. In another terminal start the dashboard:
 
-## Repository contents
+```powershell
+.\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --browser.gatherUsageStats false
+```
+
+Open the local URL printed by Streamlit. Stop either service with Ctrl+C.
+
+## Current functionality
+
+| Component | Implemented behavior |
+|---|---|
+| HTTP middleware | Bounded non-streaming text gateway; fixed local model; all supplied roles inspected |
+| Python adapter | `PromptSecurityMiddleware` and `SecureChatClient` screen context before model calls |
+| Inspection | Validation, normalization, encoding checks, rules, optional ML/Qwen evidence |
+| Dashboard | Text analysis, protected model tests, retrieval, review queue, security events |
+| Human review | Exact-excerpt approval, provenance/sensitivity preservation, explicit rechecked continuation |
+| Controlled tools | Independent gateway for fixed document/SQLite/draft-only operations |
+| Evaluation | Reproducible research experiments; candidates do not automatically replace deployed models |
 
 ```text
-ai-security-middleware/
-├── README.md
-├── app.py
-├── security_middleware/
-│   ├── agent_loop.py
-│   ├── action_gateway.py
-│   ├── audit_log.py
-│   ├── content_assessor.py
-│   ├── content_protection.py
-│   ├── controlled_tools.py
-│   ├── demo_tools.py
-│   ├── models.py
-│   ├── review_queue.py
-│   ├── ollama_client.py
-│   └── secure_retrieval.py
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── CONTRIBUTION_GUIDELINES.md
-│   ├── DEVELOPMENT.md
-│   ├── GIT_AND_GITHUB_GUIDE.md
-│   ├── IMPLEMENTATION_ROADMAP.md
-│   ├── LEARNING_GUIDE.md
-│   ├── PROJECT_TRACKER.md
-│   ├── SECURITY_MODEL.md
-│   ├── SETUP_AND_INSTALLATION.md
-│   ├── TEAM_WORKFLOW.md
-│   └── TESTING.md
-├── scripts/
-│   ├── run_agent_demo.py
-│   ├── run_controlled_tools_demo.py
-│   ├── run_gateway_demo.py
-│   ├── run_secure_retrieval_demo.py
-│   ├── verify_content_assessor.py
-│   └── verify_ollama.py
-├── sample_data/
-│   └── documents/
-└── tests/
-    ├── test_action_gateway.py
-    ├── test_agent_loop.py
-    ├── test_audit_log.py
-    ├── test_content_protection.py
-    ├── test_controlled_tools.py
-    └── test_secure_retrieval.py
+Agent request → validation/inspection → hold OR released/sanitized context → local model
+                                     → receipt and security event
 ```
 
-## Prerequisites and setup
+The HTTP service uses rules plus required local Qwen assessment. Clear deterministic holds skip model inference. Successful Qwen assessments are cached per instance for up to 60 seconds and 128 entries; failures are never cached. Answering-model responses are not cached. New-content Qwen CPU inference can remain slow.
 
-See [Setup and installation](docs/SETUP_AND_INSTALLATION.md) for the verified local environment commands.
-
-## Current status
-
-- Implemented: local environment, controlled tools, action gateway, hybrid prompt inspection, sanitization, secure document retrieval, local audit storage, and a Streamlit dashboard.
-- Verified: Python 3.14; Ollama 0.40.15; `qwen3.5:4b` (4.2B Q4, 3.3 GB); a Python request and structured tool proposal.
-- Not implemented: FastAPI API layer, end-to-end model access to controlled tools, complete execution-duration/outcome audit coverage, and broad detector evaluation.
-
-## Run the current demonstration
-
-From the repository root:
+## Verify and test
 
 ```powershell
-.\.venv\Scripts\python.exe -m scripts.run_agent_demo
+.\.venv\Scripts\python.exe -m pytest -q --basetemp .pytest-tmp
 ```
 
-The demonstration has one fixed tool, `get_project_status`. It returns text stored in the program and cannot access external resources. Run the current tests with:
+Use the [HTTP integration guide](docs/MIDDLEWARE_USAGE.md) for request examples, limits and error responses, and the [manual test guide](docs/MANUAL_TESTING.md) for benign, injected, sanitized and reviewed-excerpt cases. Recording-client tests prove held content makes no answering-model call; detection effectiveness needs separate evaluation.
 
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-```
+## Scope and limits
 
-Run the controlled local-tool demonstration with:
+- Opt-in local connector; no browser extension or automatic interception of unrelated apps.
+- Limited user/assistant/tool text API; no streaming, system messages, images, supplied tools or arbitrary generation options. Not a full Ollama/OpenAI protocol replacement.
+- PASS does not guarantee safety. Sanitized/reviewed content remains untrusted. Required detector failure holds content.
+- The deployed ML baseline is binary; suspicious is a policy band. Research candidates may have substantial false positives and misses.
+- Full model-controlled-tool integration, authentication, remote deployment, signed audits and suspended-agent recovery remain pending.
 
-```powershell
-.\.venv\Scripts\python.exe -m scripts.run_controlled_tools_demo
-```
+## Repository
 
-Run the gateway demonstration with:
-
-```powershell
-.\.venv\Scripts\python.exe -m scripts.run_gateway_demo
-```
-
-Run the secure document retrieval demonstration with:
-
-```powershell
-.\.venv\Scripts\python.exe -m scripts.run_secure_retrieval_demo
-```
-
-Run the local dashboard with:
-
-```powershell
-.\.venv\Scripts\python.exe -m streamlit run app.py
-```
-
-Open the local address Streamlit prints in PowerShell, usually `http://localhost:8501`.
+- `security_middleware/`: inspection, adapters, API, review, retrieval and tool controls.
+- `app.py`: local dashboard.
+- `scripts/`: launchers, review commands, demos and research scripts.
+- `tests/`: enforcement/regression tests; `sample_data/`: synthetic documents.
+- `data/`, `models/`, `runtime_data/`: ignored local datasets, artifacts and runtime data. Keep credentials, personal information and weights out of public commits.
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Learning guide](docs/LEARNING_GUIDE.md)
-- [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md)
-- [Setup and installation](docs/SETUP_AND_INSTALLATION.md)
-- [Git and GitHub guide](docs/GIT_AND_GITHUB_GUIDE.md)
-- [Contribution guidelines](docs/CONTRIBUTION_GUIDELINES.md)
-- [Security model](docs/SECURITY_MODEL.md)
-- [Testing plan](docs/TESTING.md)
-- [Team workflow](docs/TEAM_WORKFLOW.md)
-- [Project tracker](docs/PROJECT_TRACKER.md)
-# ML detector development checkpoint (2026-11-13)
-
-The local TF-IDF/Logistic Regression baseline now trains from pinned deepset data and saves an ignored local model artifact. Analyze text offers detector configuration selection and classifier probability/duration output. Required ML failure or uncertainty holds content; classification does not grant action permissions. Current verification: 30 tests pass, dependency consistency passes, and held-out binary precision/recall/F1 are 0.8824/0.7692/0.8219. These do not measure final pipeline effectiveness. See [ML training guide](docs/ML_TRAINING.md) for commands, licensing, measured results, provisional thresholds and unfinished work. The prompt-injection module remains in development.
+- [Setup](docs/SETUP_AND_INSTALLATION.md) · [Development](docs/DEVELOPMENT.md)
+- [Architecture](docs/ARCHITECTURE.md) · [Security model](docs/SECURITY_MODEL.md)
+- [Tracker](docs/PROJECT_TRACKER.md) · [Testing](docs/TESTING.md)
+- [ML training](docs/ML_TRAINING.md) · [Implementation review](docs/IMPLEMENTATION_REVIEW.md)

@@ -1,5 +1,7 @@
 # Development Guide
 
+Current launch commands are in [README](../README.md) and [middleware usage](MIDDLEWARE_USAGE.md). The milestone demos below remain runnable historical teaching steps, not the full HTTP service. Use `requirements-test.txt` for the complete suite.
+
 ## Current state
 
 The repository includes a bounded demonstration agent loop, controlled local tools, an action gateway, hybrid content protection, a local review queue, concise security-event storage, and a Streamlit dashboard. A Python 3.14 virtual environment, selected project dependencies, Ollama, and the local `qwen3.5:4b` model are installed and verified.

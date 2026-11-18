@@ -29,6 +29,8 @@ from security_middleware.review_queue import (
     initialize_review_database,
 )
 from security_middleware.secure_retrieval import SecureDocumentRetrieval
+from security_middleware.protected_demo import run_protected_demo
+from security_middleware.ollama_client import OllamaClient
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -102,9 +104,40 @@ st.title("AI Agent Security Middleware")
 st.caption("Local prompt inspection, secure document retrieval, and review workflow.")
 
 inspector, retrieval, review_queue, audit_log = services()
-analysis_tab, retrieval_tab, review_tab, audit_tab = st.tabs(
-    ["Analyze text", "Secure retrieval", "Review queue", "Security events"]
+analysis_tab, retrieval_tab, review_tab, audit_tab, model_tab = st.tabs(
+    ["Analyze text", "Secure retrieval", "Review queue", "Security events", "Protected model test"]
 )
+
+with model_tab:
+    st.subheader('Test the boundary before the model')
+    st.caption('A held task or context stops the complete request. This test has no tools or action execution.')
+    task = st.text_area('Task for the model', value='Summarize the supplied context in one sentence.', max_chars=20000)
+    context = st.text_area('Untrusted document or tool-result text', max_chars=20000)
+    configuration = st.selectbox('Test inspection mode', ['Rules + Qwen', 'Rules only'])
+    if configuration == 'Rules only':
+        st.caption('Diagnostic mode: pattern checks alone can miss unfamiliar attacks.')
+    if st.button('Run protected model test'):
+        demo_inspector = ContentInspector(
+            assessor=OllamaContentAssessor() if configuration == 'Rules + Qwen' else None,
+            require_assessment_for_untrusted=configuration == 'Rules + Qwen')
+        with st.spinner('Inspecting and conditionally calling the local model…'):
+            receipt = run_protected_demo(task, context, demo_inspector, OllamaClient())
+        audit_log.record('protected_model_test', receipt.reason,
+            {'request_id': receipt.request_id, 'model_called': receipt.model_called,
+             'forwarded_sha256': receipt.forwarded_sha256, 'error': receipt.error,
+             'configuration': configuration}, decision=receipt.decision)
+        st.session_state['protected_receipt'] = (task, context, configuration, receipt)
+    previous_test = st.session_state.get('protected_receipt')
+    if previous_test and previous_test[:3] == (task, context, configuration):
+        receipt = previous_test[3]
+        if receipt.decision == 'BLOCKED':
+            st.error('Withheld: no task/context was forwarded to the answering model.')
+        elif receipt.error:
+            st.error(receipt.error)
+        else:
+            st.success('Inspected context forwarded to the local model.')
+            st.write(receipt.response)
+        st.json(receipt.model_dump(exclude={'response'}))
 
 with analysis_tab:
     st.subheader("Prompt and content inspection")
@@ -141,6 +174,11 @@ with analysis_tab:
         if result.decision is ContentDecision.HOLD_FOR_REVIEW:
             item = review_queue.create(envelope, result)
             st.info(f"Stored as review item #{item.review_id}.")
+            st.toast("Content withheld from the model and sent to review.", icon="🛑")
+        elif result.decision is ContentDecision.SANITIZE:
+            st.toast("Suspicious instructions were removed before release.", icon="🧹")
+        else:
+            st.toast("Content passed the configured checks.", icon="✅")
         st.session_state['last_inspection'] = (mode, user_text, result)
     previous = st.session_state.get('last_inspection')
     if previous and previous[:2] == (mode, user_text):

@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .pytest-tmp/
+.pytest-*/
 .env
 *.sqlite3
 *.db
@@ -12,4 +13,6 @@ data/raw/
 data/processed/
 data/evaluation/
 models/
+PromptShieldDataset/
+datasets/public_raw/
 

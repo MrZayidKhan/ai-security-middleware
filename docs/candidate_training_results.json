@@ -1,0 +1,338 @@
+{
+  "seed": 42,
+  "exclusions": {
+    "validation": 4,
+    "train": 365
+  },
+  "counts": {
+    "hendzh__PromptShield_test": 23516,
+    "train": 19090,
+    "validation": 996,
+    "deepset__prompt-injections_test": 116,
+    "notinject": 339,
+    "injecagent_base": 1054,
+    "injecagent_enhanced": 1054,
+    "spml_context_dependent": 16011,
+    "bipia_clean_contexts": 200
+  },
+  "candidates": {
+    "word": {
+      "fit_seconds": 15.371050899993861,
+      "threshold": 0.65,
+      "validation": {
+        "n": 996,
+        "accuracy": 0.892570281124498,
+        "precision": 0.9780487804878049,
+        "recall": 0.8036072144288577,
+        "f1": 0.8822882288228823,
+        "confusion_matrix": [
+          [
+            488,
+            9
+          ],
+          [
+            98,
+            401
+          ]
+        ],
+        "false_positive_rate": 0.018108651911468814,
+        "false_negative_rate": 0.1963927855711423,
+        "pr_auc": 0.9796521482781394,
+        "roc_auc": 0.9777462369406821
+      },
+      "train": {
+        "n": 19090,
+        "accuracy": 0.896280775275013,
+        "precision": 0.9956639566395664,
+        "recall": 0.790447504302926,
+        "f1": 0.8812664907651715,
+        "confusion_matrix": [
+          [
+            9762,
+            32
+          ],
+          [
+            1948,
+            7348
+          ]
+        ],
+        "false_positive_rate": 0.0032673065141923625,
+        "false_negative_rate": 0.20955249569707401,
+        "pr_auc": 0.9916375968683058,
+        "roc_auc": 0.991636522606661
+      },
+      "artifact_bytes": 1911162
+    },
+    "word_char": {
+      "fit_seconds": 41.537163399974816,
+      "threshold": 0.69,
+      "validation": {
+        "n": 996,
+        "accuracy": 0.8985943775100401,
+        "precision": 0.9806763285024155,
+        "recall": 0.8136272545090181,
+        "f1": 0.8893756845564075,
+        "confusion_matrix": [
+          [
+            489,
+            8
+          ],
+          [
+            93,
+            406
+          ]
+        ],
+        "false_positive_rate": 0.01609657947686117,
+        "false_negative_rate": 0.18637274549098196,
+        "pr_auc": 0.9862353892085706,
+        "roc_auc": 0.9853025971460023
+      },
+      "train": {
+        "n": 19090,
+        "accuracy": 0.9188056574122577,
+        "precision": 0.9981991252894263,
+        "recall": 0.8347676419965576,
+        "f1": 0.9091974223784417,
+        "confusion_matrix": [
+          [
+            9780,
+            14
+          ],
+          [
+            1536,
+            7760
+          ]
+        ],
+        "false_positive_rate": 0.0014294465999591588,
+        "false_negative_rate": 0.16523235800344235,
+        "pr_auc": 0.9971536048575748,
+        "roc_auc": 0.9971614264168903
+      },
+      "artifact_bytes": 4455188
+    }
+  },
+  "limitations": [
+    "Template normalization removes exact/digit/punctuation variants; semantic paraphrase leakage remains possible.",
+    "SPML is evaluated without system context and is a context-dependent diagnostic.",
+    "Single-class suites measure FPR or recall, not both precision and recall.",
+    "BIPIA clean controls are not a reconstructed BIPIA attack benchmark.",
+    "No multilingual/fairness guarantee; external suites must not drive further tuning."
+  ],
+  "selected_by_validation": "word_char",
+  "external_evaluation": {
+    "hendzh__PromptShield_test": {
+      "n": 23516,
+      "accuracy": 0.7192974995747576,
+      "precision": 0.4766355140186916,
+      "recall": 0.18085106382978725,
+      "f1": 0.2622107969151671,
+      "confusion_matrix": [
+        [
+          15742,
+          1288
+        ],
+        [
+          5313,
+          1173
+        ]
+      ],
+      "false_positive_rate": 0.07563123899001761,
+      "false_negative_rate": 0.8191489361702128,
+      "pr_auc": 0.46941095532378085,
+      "roc_auc": 0.7600552044975502
+    },
+    "deepset__prompt-injections_test": {
+      "n": 116,
+      "accuracy": 0.5775862068965517,
+      "precision": 1.0,
+      "recall": 0.18333333333333332,
+      "f1": 0.30985915492957744,
+      "confusion_matrix": [
+        [
+          56,
+          0
+        ],
+        [
+          49,
+          11
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.8166666666666667,
+      "pr_auc": 0.9301865483270667,
+      "roc_auc": 0.90625
+    },
+    "notinject": {
+      "n": 339,
+      "accuracy": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "confusion_matrix": [
+        [
+          339,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null
+    },
+    "injecagent_base": {
+      "n": 1054,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          1054,
+          0
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 1.0,
+      "pr_auc": null,
+      "roc_auc": null
+    },
+    "injecagent_enhanced": {
+      "n": 1054,
+      "accuracy": 0.5189753320683111,
+      "precision": 1.0,
+      "recall": 0.5189753320683111,
+      "f1": 0.6833229231730169,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          507,
+          547
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 0.4810246679316888,
+      "pr_auc": null,
+      "roc_auc": null
+    },
+    "spml_context_dependent": {
+      "n": 16011,
+      "accuracy": 0.23608768971332209,
+      "precision": 1.0,
+      "recall": 0.024718921936049756,
+      "f1": 0.0482452727414209,
+      "confusion_matrix": [
+        [
+          3470,
+          0
+        ],
+        [
+          12231,
+          310
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.9752810780639503,
+      "pr_auc": 0.9832746421187532,
+      "roc_auc": 0.9421170721417037
+    },
+    "bipia_clean_contexts": {
+      "n": 200,
+      "accuracy": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "confusion_matrix": [
+        [
+          200,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null
+    }
+  },
+  "baseline_comparison": {
+    "notinject": {
+      "n": 339,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "confusion_matrix": [
+        [
+          0,
+          339
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 1.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null
+    },
+    "injecagent_base": {
+      "n": 1054,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1054
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 0.0,
+      "pr_auc": null,
+      "roc_auc": null
+    },
+    "bipia_clean_contexts": {
+      "n": 200,
+      "accuracy": 0.005,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "confusion_matrix": [
+        [
+          1,
+          199
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.995,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null
+    }
+  },
+  "promoted": false,
+  "data_fingerprint": "c95ad5995cf6c9da8b0e69df23c92b9e29c4f796467df4354056514517b65b8b"
+}

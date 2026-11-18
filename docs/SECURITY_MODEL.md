@@ -1,5 +1,13 @@
 # Security Model
 
+## Advisory uncertainty aggregation
+
+ML suspicious alone remains unresolved and held. When Qwen is configured, a benign Qwen assessment can resolve ML suspicious only if the pre-ML inspection already returned PASS. High-risk ML, unavailable ML, rule-based holds and Qwen holds remain withheld. No change to the classifier's trained parameters or thresholds is implied. This policy reduces blanket review without treating detector absence as benign. Its general false-positive/false-negative trade-off still requires evaluation on the ML workstream's held-out corpus.
+
+## Model boundary
+
+The model-facing middleware screens configured user and tool messages before the chat client receives them. A hold produces no underlying model request and no partial context. Sanitization is bounded and remains untrusted. The middleware does not inspect or authorize tool calls after the model responds; proposed actions still require the action gateway.
+
 ## Status and scope
 
 The action gateway, fixed executor, argument validation, scopes, limits, hybrid content inspection, sanitization, local review queue, concise event storage, and dashboard are implemented and tested at their current scope. Model-to-gateway integration, complete execution auditing, and evaluation remain pending. The MVP is a local application-level gateway. It is not a hardened OS sandbox and does not defend a compromised host, administrator, Python process, or dependency.

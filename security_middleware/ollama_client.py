@@ -28,10 +28,12 @@ class OllamaClient:
         model_name: str = "qwen3.5:4b",
         base_url: str = "http://127.0.0.1:11434",
         timeout_seconds: int = 90,
+        response_format: dict[str, Any] | None = None,
     ) -> None:
         self._model_name = model_name
         self._chat_url = f"{base_url.rstrip('/')}/api/chat"
         self._timeout_seconds = timeout_seconds
+        self._response_format = response_format
 
     def chat(
         self, messages: list[ChatMessage], tools: list[dict[str, object]]
@@ -44,6 +46,9 @@ class OllamaClient:
             "messages": [message.model_dump(exclude_none=True) for message in messages],
             "tools": tools,
         }
+        if self._response_format is not None:
+            payload['format'] = self._response_format
+            payload['options'] = {'temperature': 0}
         request = Request(
             self._chat_url,
             data=json.dumps(payload).encode("utf-8"),

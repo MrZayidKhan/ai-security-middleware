@@ -1,8 +1,22 @@
 # Architecture
 
+## Explicit review continuation
+
+`run_reviewed_demo` fetches only `ReviewQueue.approved_content`, rechecks the task and approved envelope, then forwards their released content through the same bounded tool-free forwarding helper used by Protected model test. Review identity and sensitivity appear in the receipt; raw held text is never added to the answering context. `scripts.continue_review` exposes this operation with explicit `--send-to-model` and writes a concise event. It creates a new request rather than replaying an agent session.
+
+## Reviewed content release
+
+Review records persist origin trust and sensitivity. `ReviewQueue.approved_content(review_id)` returns only an approved exact excerpt with provenance; pending/rejected/missing or invalid legacy approvals cannot release content. Approval always releases as untrusted and does not grant action authority. Existing schemas migrate with conservative untrusted/confidential labels for historical records. No automatic model retry is performed.
+
+Protected retrieval clears raw `action.result` and exposes `released_content` only after PASS/SANITIZE. `content_for_model` remains for compatibility. Inspection evidence and gateway internal history are diagnostic/admin data, not released context. Callers must use the explicit release fields rather than forwarding a complete result object.
+
+## Model-facing middleware checkpoint
+
+`PromptSecurityMiddleware` is the reusable boundary between an agent and its model client. It screens user and tool messages before the client is called, passes normalized or sanitized content only when the inspection result is `PASS` or `SANITIZE`, and withholds the complete context on `HOLD_FOR_REVIEW`. `SecureChatClient` applies that boundary directly before any model call, and `AgentLoop` accepts it as an optional dependency. The middleware never executes tools or grants permissions; the action gateway remains the authorization boundary.
+
 ## Status
 
-The current checkpoint implements a local model client, validated message shapes, a bounded demonstration agent loop, controlled local tools, an action gateway, hybrid content inspection, sanitization, a local review queue, concise SQLite security events, and a Streamlit dashboard. FastAPI, end-to-end model-to-gateway integration, and complete execution auditing remain pending.
+The current checkpoint implements a local model client, demonstration loop, controlled tools, action gateway, inspection/review, local security events, Streamlit dashboard and a limited FastAPI text middleware. Full model-to-tool integration and comprehensive execution auditing remain pending. See MIDDLEWARE_USAGE.md for the current API contract.
 
 ## Current demonstration flow
 
@@ -109,7 +123,7 @@ The gateway is an application-level control. It cannot contain arbitrary code ru
 
 ## Planned integration order
 
-Milestones 1–5 are implemented and verified at their documented scope. The present checkpoint adds hybrid inspection and a local dashboard. Model-to-gateway integration, a FastAPI layer, evaluation, and final hardening remain in milestones 6–10. Details and statuses are in the tracker.
+Milestones 1–5 are implemented at their documented scope. A local dashboard and limited HTTP text gateway are available. Full model-to-tool integration, broad evaluation and final hardening remain in milestones 6–10. Details and statuses are in the tracker.
 
 ## Current dashboard and hybrid inspection
 

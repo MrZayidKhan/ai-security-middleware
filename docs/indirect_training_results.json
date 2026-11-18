@@ -1,0 +1,192 @@
+{
+  "training_rows": 22314,
+  "fit_seconds": 34.301959300006274,
+  "threshold": 0.54,
+  "validation_direct": {
+    "n": 996,
+    "accuracy": 0.8875502008032129,
+    "precision": 0.9618138424821002,
+    "recall": 0.8076152304609219,
+    "f1": 0.8779956427015251,
+    "confusion_matrix": [
+      [
+        481,
+        16
+      ],
+      [
+        96,
+        403
+      ]
+    ],
+    "false_positive_rate": 0.03219315895372234,
+    "false_negative_rate": 0.19238476953907815,
+    "pr_auc": 0.9765846992963697,
+    "roc_auc": 0.9746736934633855
+  },
+  "validation_indirect": {
+    "n": 720,
+    "accuracy": 0.525,
+    "precision": 0.9583333333333334,
+    "recall": 0.38333333333333336,
+    "f1": 0.5476190476190477,
+    "confusion_matrix": [
+      [
+        171,
+        9
+      ],
+      [
+        333,
+        207
+      ]
+    ],
+    "false_positive_rate": 0.05,
+    "false_negative_rate": 0.6166666666666667,
+    "pr_auc": 0.9047385968857556,
+    "roc_auc": 0.7389043209876545
+  },
+  "held_out_development_attack_families": [
+    "Alphanumeric Substitution",
+    "Homophonic Substitution",
+    "Learning and Tutoring",
+    "Programming Help"
+  ],
+  "train_context_count": 806,
+  "validation_context_count": 180,
+  "validation_fpr_constraint_met": true,
+  "training": {
+    "n": 22314,
+    "accuracy": 0.9067849780406919,
+    "precision": 0.9863691437802908,
+    "recall": 0.8339593648625576,
+    "f1": 0.9037838838005365,
+    "confusion_matrix": [
+      [
+        10465,
+        135
+      ],
+      [
+        1945,
+        9769
+      ]
+    ],
+    "false_positive_rate": 0.012735849056603774,
+    "false_negative_rate": 0.16604063513744238,
+    "pr_auc": 0.9855777115074812,
+    "roc_auc": 0.9824041422777454
+  },
+  "evaluations": {
+    "bipia_reconstructed_test": {
+      "n": 800,
+      "accuracy": 0.6725,
+      "precision": 0.9720670391061452,
+      "recall": 0.58,
+      "f1": 0.7265135699373695,
+      "confusion_matrix": [
+        [
+          190,
+          10
+        ],
+        [
+          252,
+          348
+        ]
+      ],
+      "false_positive_rate": 0.05,
+      "false_negative_rate": 0.42,
+      "pr_auc": 0.9469030010516888,
+      "roc_auc": 0.8410625
+    },
+    "notinject": {
+      "n": 339,
+      "accuracy": 0.9970501474926253,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "confusion_matrix": [
+        [
+          338,
+          1
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0029498525073746312,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null
+    },
+    "injecagent_base": {
+      "n": 1054,
+      "accuracy": 0.031309297912713474,
+      "precision": 1.0,
+      "recall": 0.031309297912713474,
+      "f1": 0.06071757129714812,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          1021,
+          33
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 0.9686907020872866,
+      "pr_auc": null,
+      "roc_auc": null
+    },
+    "injecagent_enhanced": {
+      "n": 1054,
+      "accuracy": 0.8937381404174574,
+      "precision": 1.0,
+      "recall": 0.8937381404174574,
+      "f1": 0.9438877755511023,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          112,
+          942
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 0.1062618595825427,
+      "pr_auc": null,
+      "roc_auc": null
+    },
+    "hendzh__PromptShield_test": {
+      "n": 23516,
+      "accuracy": 0.7059448885864943,
+      "precision": 0.46114834269154137,
+      "recall": 0.39253777366635834,
+      "f1": 0.42408594986258014,
+      "confusion_matrix": [
+        [
+          14055,
+          2975
+        ],
+        [
+          3940,
+          2546
+        ]
+      ],
+      "false_positive_rate": 0.17469172049324722,
+      "false_negative_rate": 0.6074622263336417,
+      "pr_auc": 0.4421957564999998,
+      "roc_auc": 0.7537007664006979
+    }
+  },
+  "limitations": [
+    "Experimental text-only model; no semantic comparison with trusted task.",
+    "BIPIA reconstruction uses deterministic character-midpoint insertion, not official sentence-middle insertion.",
+    "Previously inspected external suites are regression evidence, not fresh blind tests.",
+    "Source balancing and exact/template separation do not establish semantic deduplication or demographic fairness.",
+    "Synthetic BIPIA variants share contexts and payloads; counts are not independent observations."
+  ],
+  "promoted": false
+}

@@ -1,15 +1,31 @@
 # Project Tracker
 
+Current cleanup checkpoint: 94 tests pass. Local HTTP middleware, Python adapter, dashboard, review release and explicit continuation are implemented at their documented scope. Performance work adds bounded successful-assessment caching and avoids inference after deterministic holds. README is the current entry point; checkpoint counts below are historical snapshots, not the current total.
+
+## Historical checkpoints
+
+HTTP middleware checkpoint: local FastAPI text gateway `/api/chat` and loopback launcher implemented, with bounded non-streaming requests, required Qwen assessment, role-spoofing inspection, forwarding receipts and dashboard-visible events. 86 tests pass including 16 HTTP boundary tests. Live local HTTP benign request returned a real Ollama answer. Browser extension and full Ollama/OpenAI protocol compatibility remain pending. See MIDDLEWARE_USAGE.md.
+
+Explicit continuation checkpoint: 70 tests pass. Approved excerpts can be rechecked and sent to local Ollama through a tool-free CLI, with forwarding receipt and concise event. Approval does not automatically call a model. Suspended-session recovery, browser interception and full controlled-agent integration remain pending.
+
+Review-release checkpoint: 65 tests pass. Trust/sensitivity labels persist with backward-compatible migration; approved-excerpt release API and CLI refuse unresolved/rejected/invalid reviews. Protected retrieval removes the raw executor result from returned action objects and adds an explicit released-content envelope. Automatic resumption and gateway history minimization remain pending.
+
+Middleware tuning checkpoint: 62 tests pass. Combined mode can resolve ML uncertainty with benign Qwen evidence only when the base inspection passes. Required failures and high-risk findings still hold. Local benign/attack verification succeeded. Model training and threshold calibration remain separate work.
+
+Current model-test checkpoint: protected local model dashboard flow, forwarding receipts, and manual acceptance guide added; 52 automated tests pass. ML files remain with the ML workstream. Browser interception, approved-review resumption, comprehensive detector evaluation and full controlled-tool integration remain pending.
+
 This is the source of truth for project progress. Statuses describe verified state; the existence of documentation alone does not complete an application feature.
 
 ## Progress summary
 
+Earlier model-boundary checkpoint (2026-11-15): 46 tests passed then. Current verification is recorded at the top of this file. Full agent/tool integration and detector effectiveness remain pending.
+
 - **Overall:** Milestones 0 through 5 complete.
-- **Current milestone:** Hybrid prompt protection and local UI verification.
+- **Current milestone:** Local middleware integration, reliability and performance.
 - **Completed:** Repository audit, initial documentation, Python virtual environment, dependency installation, Ollama installation, model verification, structured tool-call check, bounded agent loop, fixed harmless tool, controlled local tools, action security gateway, content inspection, sanitization, and review queue.
 - **In progress:** Hybrid detector evaluation and UI workflow refinement.
-- **Pending:** Model-to-gateway integration, complete execution audit, FastAPI API, evaluation, final demo.
-- **Blocked:** None identified. Model/hardware feasibility remains unverified, not blocked.
+- **Pending:** Full model-to-tool integration, complete execution audit, broader detector evaluation and final demo.
+- **Blocked:** No runtime blocker identified. Detection effectiveness remains an open research limitation.
 - **Next recommended action:** Evaluate benign and adversarial cases through the local dashboard and expand measured coverage.
 
 ## Repository audit (2026-11-08)
@@ -49,7 +65,7 @@ This is the source of truth for project progress. Statuses describe verified sta
 - [x] Sanitization isolates clear spans; sanitized content remains untrusted.
 - [x] Human review queue and excerpt-scoped decision implemented.
 - [ ] Audit records decisions, reasons, outcomes, and duration without needless sensitive content.
-- [ ] FastAPI integration implemented.
+- [x] Limited local FastAPI text middleware implemented (not full protocol compatibility).
 - [x] Streamlit dashboard displays actual application data.
 - [ ] Automated tests cover normal, malformed, unauthorized, traversal, injection, review, limits, and audit cases.
 - [ ] Baseline, sanitization-only, and full-middleware comparison performed.
