@@ -10,7 +10,9 @@ The model-facing middleware screens configured user and tool messages before the
 
 ## Status and scope
 
-The action gateway, fixed executor, argument validation, scopes, limits, hybrid content inspection, sanitization, local review queue, concise event storage, and dashboard are implemented and tested at their current scope. Model-to-gateway integration, complete execution auditing, and evaluation remain pending. The MVP is a local application-level gateway. It is not a hardened OS sandbox and does not defend a compromised host, administrator, Python process, or dependency.
+The local application uses an action gateway with a fixed executor, input validation, resource scopes, limits, inspection, review, and local events. The installable workspace hooks screen content exposed by Codex and Antigravity. Their tool permissions remain under each host's control.
+
+Codex can block typed prompts and replace supported tool results with feedback. A block leaves completed tool side effects intact. Antigravity can stop model invocation based on the latest typed prompt. If the host skips a hook or the hook fails to run or times out, the host may continue with unscreened text. See the [project scope](PROJECT_SCOPE.md) for coverage and verification limits.
 
 ## Current enforced controls
 
@@ -40,7 +42,7 @@ Consider malicious instructions embedded in retrieved content, a user submitting
 
 Boundaries include user input to agent; model response to parser; parsed call to gateway; gateway to executor/resources; retrieved content back to model; review UI to approved excerpts; and local API/dashboard to backend. Attack surfaces include JSON parsing, argument validation, document IDs/paths, SQL parameters, outbox destination fields, content inspection, review controls, and audit data.
 
-## Required policies
+## Required policies for the local controlled-tool gateway
 
 1. Every tool call passes through the action gateway.
 2. Explicit allowlist; validate tool name and arguments independently.

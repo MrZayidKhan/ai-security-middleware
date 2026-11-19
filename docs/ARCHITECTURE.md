@@ -1,5 +1,9 @@
 # Architecture
 
+## Installed agent hooks
+
+The Python package registers workspace command hooks around the model-facing inspector. Codex sends `UserPromptSubmit` and supported `PostToolUse` events. Antigravity sends `PreInvocation` with the latest typed prompt. A sanitization or hold decision blocks the original text. The host still runs the answering model and applies its own permissions. See the [project scope](PROJECT_SCOPE.md) and [hook setup](AGENT_HOOKS.md).
+
 ## Explicit review continuation
 
 `run_reviewed_demo` fetches only `ReviewQueue.approved_content`, rechecks the task and approved envelope, then forwards their released content through the same bounded tool-free forwarding helper used by Protected model test. Review identity and sensitivity appear in the receipt; raw held text is never added to the answering context. `scripts.continue_review` exposes this operation with explicit `--send-to-model` and writes a concise event. It creates a new request rather than replaying an agent session.

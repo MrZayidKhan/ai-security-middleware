@@ -1,5 +1,7 @@
 # Setup and Installation
 
+Use the [agent hook setup](AGENT_HOOKS.md) to install from a Git clone or wheel on a machine running Codex or Antigravity. The steps below set up the full local Ollama development and demonstration environment on Windows.
+
 ## Status
 
 The Python environment, Ollama installation, and local model are verified for the current development setup.

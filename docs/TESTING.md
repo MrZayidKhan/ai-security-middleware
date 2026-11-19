@@ -1,5 +1,9 @@
 # Testing Plan
 
+## Installed agent guard
+
+The wheel and generated hook commands passed a Windows rules-mode smoke test. From a clean source snapshot, `python -m pytest tests/test_agent_hooks.py tests/test_middleware.py tests/test_middleware_policy.py -q` passed 18 tests. These checks cover command responses and middleware decisions. The [project scope](PROJECT_SCOPE.md) defines the remaining live-agent and platform acceptance tests.
+
 Live local timing observation: one fresh Qwen assessment took 41,504 ms; an identical cached assessment on the same instance took 0.090 ms. A deterministic credential-exfiltration hold took 0.581 ms without inference. These are single observations, not throughput or percentile benchmarks. Cold/new content and answering-model generation remain expensive; cache benefits apply to exact repeats on a surviving instance.
 
 Current performance/refactoring checkpoint: 94 tests pass. New checks cover cache expiry/capacity, independent return values, distinct content keys, uncached invalid output and no assessor invocation for deterministic holds. Older counts below identify earlier checkpoints. These are functional tests, not general detection accuracy measurements.

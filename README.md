@@ -1,12 +1,25 @@
 # AI Agent Security Middleware
 
-A local Python connector that inspects model-bound text before forwarding it to Ollama. It provides PASS, SANITIZE or HOLD decisions, a local HTTP gateway, a Streamlit dashboard, excerpt review and SQLite security events.
+AI Agent Security Middleware screens untrusted text before it reaches an AI agent's answering model. Install it as a Python package from a Git clone or wheel for supported Codex and Google Antigravity workspaces. You can also integrate the inspector into your own Python agent or use the local Ollama HTTP gateway.
 
 For an installable prompt guard for Codex and Google Antigravity, see the
 [cross-platform agent setup](docs/AGENT_HOOKS.md). The hooks use the agent's own
 answering model and can be installed independently of the dashboard and gateway.
 
-## Start on Windows
+## Objectives
+
+- Make prompt-injection screening installable on another machine without copying development paths, local datasets, or model artifacts.
+- Screen user prompts and retrieved text at the model boundary where the integration exposes them. Pass benign text, sanitize when the interface can forward replacement text, and withhold unresolved content.
+- Keep tool permissions independent of classifier decisions. Demonstrate bounded tool execution, excerpt review, and security events in the local application.
+- Measure enforcement and detector effectiveness separately. Document coverage, false positives, misses, and runtime limitations.
+
+See [project scope and acceptance criteria](docs/PROJECT_SCOPE.md) for what ships today and what still needs verification.
+
+## Install for Codex or Antigravity
+
+From the clone, use Python 3.10 or newer and run `python -m pip install .` in a virtual environment. From the workspace to protect, run `ai-security-middleware install codex` or `ai-security-middleware install antigravity`. The default classifier uses local Ollama with `qwen3.5:4b`. Use `--detector rules` for a smoke test without Ollama. Follow the [agent setup guide](docs/AGENT_HOOKS.md) to enable the generated hooks.
+
+## Run the local Ollama demo on Windows
 
 From the repository root, create an environment if needed and install dependencies:
 
@@ -42,6 +55,8 @@ Open the local URL printed by Streamlit. Stop either service with Ctrl+C.
 
 | Component | Implemented behavior |
 |---|---|
+| Codex hooks | Block typed prompts and replace withheld results on supported tool paths |
+| Antigravity hook | Stop a model invocation based on the latest typed prompt |
 | HTTP middleware | Bounded non-streaming text gateway; fixed local model; all supplied roles inspected |
 | Python adapter | `PromptSecurityMiddleware` and `SecureChatClient` screen context before model calls |
 | Inspection | Validation, normalization, encoding checks, rules, optional ML/Qwen evidence |
@@ -67,10 +82,11 @@ Use the [HTTP integration guide](docs/MIDDLEWARE_USAGE.md) for request examples,
 
 ## Scope and limits
 
-- Opt-in local connector; no browser extension or automatic interception of unrelated apps.
+- Workspace installation is opt-in. Hook coverage is limited to the inputs each agent exposes. Antigravity's native hook cannot screen tool results. Attachments and unhooked context are outside coverage.
+- The hook package targets Windows, macOS, and Linux. The wheel and generated commands were smoke-tested in rules mode on Windows. Live agent sessions, Ollama-backed hook execution, and macOS/Linux runs still need verification.
 - Limited user/assistant/tool text API; no streaming, system messages, images, supplied tools or arbitrary generation options. Not a full Ollama/OpenAI protocol replacement.
 - PASS does not guarantee safety. Sanitized/reviewed content remains untrusted. Required detector failure holds content.
-- The deployed ML baseline is binary; suspicious is a policy band. Research candidates may have substantial false positives and misses.
+- The optional ML baseline is binary. Suspicious is a policy band, and each detector configuration can produce false positives and misses.
 - Full model-controlled-tool integration, authentication, remote deployment, signed audits and suspended-agent recovery remain pending.
 
 ## Repository
@@ -84,6 +100,7 @@ Use the [HTTP integration guide](docs/MIDDLEWARE_USAGE.md) for request examples,
 ## Documentation
 
 - [Setup](docs/SETUP_AND_INSTALLATION.md) · [Development](docs/DEVELOPMENT.md)
+- [Agent hooks](docs/AGENT_HOOKS.md) · [Project scope](docs/PROJECT_SCOPE.md)
 - [Architecture](docs/ARCHITECTURE.md) · [Security model](docs/SECURITY_MODEL.md)
 - [Tracker](docs/PROJECT_TRACKER.md) · [Testing](docs/TESTING.md)
 - [ML training](docs/ML_TRAINING.md) · [Implementation review](docs/IMPLEMENTATION_REVIEW.md)

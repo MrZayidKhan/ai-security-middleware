@@ -1,8 +1,10 @@
 # Project Tracker
 
-Current cleanup checkpoint: 94 tests pass. Local HTTP middleware, Python adapter, dashboard, review release and explicit continuation are implemented at their documented scope. Performance work adds bounded successful-assessment caching and avoids inference after deterministic holds. README is the current entry point; checkpoint counts below are historical snapshots, not the current total.
+Current distribution checkpoint: a wheel built from a clean checkout, 18 targeted tests passed from a clean snapshot, and the installed hook commands passed a Windows rules-mode smoke test. Live Codex and Antigravity sessions, Ollama-backed hook execution, and macOS/Linux installs remain pending. See [scope and acceptance criteria](PROJECT_SCOPE.md). Earlier test counts are historical snapshots.
 
 ## Historical checkpoints
+
+Local cleanup checkpoint: 94 tests passed. Local HTTP middleware, Python adapter, dashboard, review release, and explicit continuation were implemented at their documented scope.
 
 HTTP middleware checkpoint: local FastAPI text gateway `/api/chat` and loopback launcher implemented, with bounded non-streaming requests, required Qwen assessment, role-spoofing inspection, forwarding receipts and dashboard-visible events. 86 tests pass including 16 HTTP boundary tests. Live local HTTP benign request returned a real Ollama answer. Browser extension and full Ollama/OpenAI protocol compatibility remain pending. See MIDDLEWARE_USAGE.md.
 
@@ -21,12 +23,12 @@ This is the source of truth for project progress. Statuses describe verified sta
 Earlier model-boundary checkpoint (2026-11-15): 46 tests passed then. Current verification is recorded at the top of this file. Full agent/tool integration and detector effectiveness remain pending.
 
 - **Overall:** Milestones 0 through 5 complete.
-- **Current milestone:** Local middleware integration, reliability and performance.
+- **Current milestone:** Distributable agent guard and live cross-platform acceptance.
 - **Completed:** Repository audit, initial documentation, Python virtual environment, dependency installation, Ollama installation, model verification, structured tool-call check, bounded agent loop, fixed harmless tool, controlled local tools, action security gateway, content inspection, sanitization, and review queue.
 - **In progress:** Hybrid detector evaluation and UI workflow refinement.
 - **Pending:** Full model-to-tool integration, complete execution audit, broader detector evaluation and final demo.
 - **Blocked:** No runtime blocker identified. Detection effectiveness remains an open research limitation.
-- **Next recommended action:** Evaluate benign and adversarial cases through the local dashboard and expand measured coverage.
+- **Next recommended action:** Run the live agent and platform checks defined in the project scope.
 
 ## Repository audit (2026-11-08)
 
@@ -66,6 +68,10 @@ Earlier model-boundary checkpoint (2026-11-15): 46 tests passed then. Current ve
 - [x] Human review queue and excerpt-scoped decision implemented.
 - [ ] Audit records decisions, reasons, outcomes, and duration without needless sensitive content.
 - [x] Limited local FastAPI text middleware implemented (not full protocol compatibility).
+- [x] Python package and workspace hook installer for Codex and Antigravity implemented.
+- [x] Windows wheel install and generated rules-mode hook commands smoke-tested.
+- [ ] Verify live hook enforcement with both agents and the default Ollama assessor.
+- [ ] Verify fresh source and wheel installs on macOS and Linux.
 - [x] Streamlit dashboard displays actual application data.
 - [ ] Automated tests cover normal, malformed, unauthorized, traversal, injection, review, limits, and audit cases.
 - [ ] Baseline, sanitization-only, and full-middleware comparison performed.

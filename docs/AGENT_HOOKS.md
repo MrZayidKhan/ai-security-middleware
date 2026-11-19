@@ -51,6 +51,8 @@ Submit a harmless text-only task to verify it can proceed. A synthetic prompt li
 
 ## Coverage
 
+See [Project Objectives and Scope](PROJECT_SCOPE.md) for acceptance criteria and current verification.
+
 | Integration | Screens | Configuration |
 | --- | --- | --- |
 | Codex | Typed prompts and results from tools covered by `PostToolUse` | `.codex/hooks.json` |
