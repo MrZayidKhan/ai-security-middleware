@@ -12,13 +12,12 @@ permissions:
 
 jobs:
   python-tests:
-    name: Python ${{ matrix.python }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Python ${{ matrix.python }} on Windows
+    runs-on: windows-2022
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022, macos-15]
         python: ['3.10', '3.14']
     steps:
       - uses: actions/checkout@v6
@@ -37,7 +36,7 @@ jobs:
 
   wheel:
     name: Build Python distribution
-    runs-on: ubuntu-22.04
+    runs-on: windows-2022
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
@@ -76,29 +75,12 @@ jobs:
             platform: windows-arm64
             target: aarch64-pc-windows-msvc
             executable: security-dashboard.exe
-          - os: macos-15-intel
-            platform: macos-x64
-            target: x86_64-apple-darwin
-            executable: security-dashboard
-          - os: macos-15
-            platform: macos-arm64
-            target: aarch64-apple-darwin
-            executable: security-dashboard
-          - os: ubuntu-22.04
-            platform: linux-x64
-            target: x86_64-unknown-linux-gnu
-            executable: security-dashboard
-          - os: ubuntu-22.04-arm
-            platform: linux-arm64
-            target: aarch64-unknown-linux-gnu
-            executable: security-dashboard
     env:
       RUSTUP_TOOLCHAIN: stable-${{ matrix.target }}
       CARGO_TARGET_DIR: ${{ github.workspace }}/build-dashboard
       CARGO_BUILD_TARGET: ${{ matrix.target }}
       CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUSTFLAGS: '-C target-feature=+crt-static'
       CARGO_TARGET_AARCH64_PC_WINDOWS_MSVC_RUSTFLAGS: '-C target-feature=+crt-static'
-      MACOSX_DEPLOYMENT_TARGET: '12.0'
       DASHBOARD_PLATFORM: ${{ matrix.platform }}
       DASHBOARD_EXECUTABLE: ${{ matrix.executable }}
     steps:
@@ -112,26 +94,23 @@ jobs:
         with:
           name: distribution-python
           path: wheel-artifact
-      - name: Install Linux desktop build dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libwayland-dev libxkbcommon-dev libx11-dev libx11-xcb-dev libxi-dev libxcursor-dev libxrandr-dev pkg-config
       - name: Select the native Rust toolchain
-        shell: bash
-        run: rustup toolchain install "$RUSTUP_TOOLCHAIN" --profile minimal
+        shell: pwsh
+        run: rustup toolchain install $env:RUSTUP_TOOLCHAIN --profile minimal
       - name: Test and build Rust
         run: |
           cargo test --locked --release --manifest-path rust-dashboard/Cargo.toml
           cargo build --locked --release --manifest-path rust-dashboard/Cargo.toml --bin security-dashboard
       - name: Verify installed Python and Rust interoperability
-        shell: bash
+        shell: pwsh
         run: |
-          python packaging/verify_bundle.py --wheel-dir wheel-artifact --dashboard "$CARGO_TARGET_DIR/$CARGO_BUILD_TARGET/release/$DASHBOARD_EXECUTABLE"
+          $dashboard = Join-Path $env:CARGO_TARGET_DIR "$env:CARGO_BUILD_TARGET\release\$env:DASHBOARD_EXECUTABLE"
+          python packaging/verify_bundle.py --wheel-dir wheel-artifact --dashboard $dashboard
       - name: Package the dashboard
-        shell: bash
+        shell: pwsh
         run: |
-          python packaging/package_dashboard.py "$DASHBOARD_PLATFORM" "$CARGO_TARGET_DIR/$CARGO_BUILD_TARGET/release/$DASHBOARD_EXECUTABLE" release-assets
+          $dashboard = Join-Path $env:CARGO_TARGET_DIR "$env:CARGO_BUILD_TARGET\release\$env:DASHBOARD_EXECUTABLE"
+          python packaging/package_dashboard.py $env:DASHBOARD_PLATFORM $dashboard release-assets
       - uses: actions/upload-artifact@v7
         with:
           name: distribution-dashboard-${{ matrix.platform }}
@@ -144,7 +123,7 @@ jobs:
     name: Publish versioned downloads
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: [python-tests, wheel, dashboard]
-    runs-on: ubuntu-22.04
+    runs-on: windows-2022
     timeout-minutes: 10
     permissions:
       contents: write
@@ -155,13 +134,17 @@ jobs:
           pattern: distribution-*
           merge-multiple: true
       - name: Publish verified artifacts with checksums
-        shell: bash
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          cd assets
-          files=(*.whl *.tar.gz *.zip)
-          sha256sum -- "${files[@]}" > SHA256SUMS.txt
-          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --verify-tag \
-            --generate-notes -- "${files[@]}" DOWNLOADS.md SHA256SUMS.txt
+          Set-Location assets
+          $files = @(Get-ChildItem -File | Where-Object { $_.Name -match '\.(whl|zip)$' })
+          $hashes = $files | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)"
+          }
+          $hashes | Set-Content SHA256SUMS.txt
+          $releaseFiles = @($files.FullName) + @((Resolve-Path DOWNLOADS.md).Path, (Resolve-Path SHA256SUMS.txt).Path)
+          gh release create $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --verify-tag --generate-notes -- $releaseFiles

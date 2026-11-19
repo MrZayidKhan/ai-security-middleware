@@ -1,9 +1,9 @@
 # Install the prompt guard for Codex or Google Antigravity
 
-Install from a Git clone or a downloaded wheel on Windows, macOS or Linux with
-Python 3.10 or newer. You need a version of your agent that supports the hooks
-below. The guard runs wherever the agent executes its command hooks. Install it
-inside the VM or container too if that's where your agent runs.
+Install from a Git clone or a downloaded wheel on Windows with Python 3.10 or
+newer. Windows is the currently supported platform; macOS and Linux hook
+support is deferred until the Windows path is stable. You need a version of
+your agent that supports the hooks below.
 
 ## Install
 
@@ -41,10 +41,9 @@ ai-security-middleware install antigravity
 ```
 
 Use `--workspace <path>` to target another directory. On Windows, Codex uses
-PowerShell syntax and Antigravity uses Command Prompt syntax. On macOS and Linux
-both default to POSIX shell syntax. Use `--shell` to override the shell where
-needed. With `--detector rules`, the guard runs without Ollama using the existing
-text rules only. Use that mode to smoke-test the setup on a device without the model.
+PowerShell syntax and Antigravity uses Command Prompt syntax. With
+`--detector rules`, the guard runs without a local verifier using the existing
+text rules only. Use that mode to smoke-test the Windows setup.
 
 To see hook decisions in the desktop dashboard, install the hook with
 `--audit-db <absolute-path-to-security_events.db>`. Point it at the same file

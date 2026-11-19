@@ -9,14 +9,12 @@ events and screening decisions, not ground-truth attack detection accuracy.
 ## Download the dashboard and middleware
 
 1. Open the repository's [GitHub Actions runs](https://github.com/MrZayidKhan/ai-security-middleware/actions)
-   and choose a successful build. Download the dashboard archive matching
-   your operating system and CPU. Versioned downloads are also available on
+   and choose a successful Windows build. Download the Windows dashboard archive
+   matching your CPU. Versioned downloads are also available on
    the [Releases page](https://github.com/MrZayidKhan/ai-security-middleware/releases)
    after a release workflow succeeds.
-2. Extract the archive. Run **security-dashboard.exe** on Windows,
-   **Security Dashboard.app** on macOS, or **security-dashboard** on Linux. Linux needs
-   a graphical desktop session with graphics drivers and the runtime libraries
-   noted in the download. Run binaries only from a release or build you trust.
+2. Extract the archive and run **security-dashboard.exe**. Run binaries only
+   from a release or build you trust.
 3. Select the SQLite database if the dashboard has not already found it. To
    specify it when launching, use **security-dashboard --db PATH**. An empty
    dashboard is normal before anything writes events.
@@ -76,8 +74,7 @@ They record concise decisions, not raw prompt or tool-result text. See the
   and, when answering is enabled, forwarding/outcome events in the dashboard.
 - Run the local integration smoke test and check that withheld test inputs
   produce inspection events with no forwarding event.
-- Use only supported builds for your OS and architecture. Check CI outcomes
-  for other platforms separately from tests run on the development laptop.
+- Use only Windows builds from a successful Windows workflow run.
 
 Windows acceptance verified the native dashboard against actual local Qwen
 gateway events. The direct and indirect test requests were withheld and the

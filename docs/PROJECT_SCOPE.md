@@ -6,7 +6,7 @@ The project builds an installable security layer for AI agents. It evaluates unt
 
 | Objective | Acceptance evidence |
 | --- | --- |
-| Make the guard portable | Build a wheel from a clean checkout. Install from source and wheel on Windows, macOS, and Linux without relying on repository-specific paths. |
+| Make the guard installable | Build a wheel from a clean checkout and install it on Windows without relying on repository-specific paths. |
 | Protect supported agent context | In a live Codex and Antigravity workspace, submit a benign prompt and a harmless injection fixture. Verify that the benign turn proceeds and the held prompt is never sent to the answering model. In Codex, separately verify that a held result from a supported tool is replaced before the next model call. |
 | Keep content decisions separate from tool authority | Verify that passing inspection or approving an excerpt cannot grant permission to execute a disallowed action. Exercise this against the controlled local tool gateway. |
 | Assess effectiveness and usability | Report false positives, missed injections, sanitization outcomes, and latency on labeled direct and indirect text cases. Record the detector configuration and keep functional tests separate from accuracy measurements. |
@@ -27,11 +27,11 @@ The hook package includes a rules mode and defaults to the local Ollama/Qwen ass
 
 - Coverage is opt-in and depends on the events the host runs. Attachments, internal context, and unhooked tool paths are outside coverage. Hook execution failures or timeouts can leave an input unscreened.
 - Universal agent compatibility, a browser extension, managed hosting, mobile installers, and operating-system sandboxing are outside the current release. Full tool authorization for third-party agents, comprehensive audit coverage, and automatic recovery of suspended agent sessions remain open.
-- The package targets Windows, macOS, and Linux where the agent can run compatible Python command hooks. On Windows, the installed wheel generated working commands for all three supported hook events. Rules-mode fixtures exercised release and block, and Ollama-backed handler checks released benign fixtures for all three events. Live in-app hook trust, invocation, and enforcement in Codex and Antigravity, and macOS/Linux execution still need verification.
+- The current package target is Windows. The installed wheel generated working Windows commands for all three supported hook events. Rules-mode fixtures exercised release and block, and local-verifier handler checks released benign fixtures for all three events. Live in-app hook trust, invocation, and enforcement in Codex and Antigravity still need verification. macOS and Linux packaging and hooks are intentionally deferred.
 
 The installed gateway supports an explicit audit database path. Agent hooks can
 write metadata-only decisions to the same database using their optional audit
-flag. See [standalone setup](STANDALONE_SETUP.md) for the Windows, macOS, and
-Linux dashboard build targets and how GitHub produces downloads.
+flag. See [standalone setup](STANDALONE_SETUP.md) for the Windows dashboard
+build target and how GitHub produces downloads.
 
 See the [agent setup guide](AGENT_HOOKS.md), [security model](SECURITY_MODEL.md), and [project tracker](PROJECT_TRACKER.md).
