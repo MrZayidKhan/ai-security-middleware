@@ -1,0 +1,1375 @@
+{
+  "model": {
+    "name": "word_char",
+    "sha256": "79a2261d9ca2a2a2157fa514b058c3d12a650712cafd6390ba0dc8b9c51859d6"
+  },
+  "threshold": 0.69,
+  "fingerprint": "04d5bc4f49f4a8eee3ce5c115f89b73c6adcc33c633858b235a2bca8e759ecf3",
+  "source_files": {
+    "hendzh__PromptShield/test.json": {
+      "source": "hendzh/PromptShield",
+      "revision": "a5234cb1f5cdb256600cab64b8c961195b5e8404",
+      "file": "test.json",
+      "url": "https://huggingface.co/datasets/hendzh/PromptShield/resolve/a5234cb1f5cdb256600cab64b8c961195b5e8404/test.json",
+      "bytes": 18288615,
+      "sha256": "526207c2485829d9961407011d7f4cd929569e7f285dc8396b3f385e0608bc70"
+    },
+    "hendzh__PromptShield/train.json": {
+      "source": "hendzh/PromptShield",
+      "revision": "a5234cb1f5cdb256600cab64b8c961195b5e8404",
+      "file": "train.json",
+      "url": "https://huggingface.co/datasets/hendzh/PromptShield/resolve/a5234cb1f5cdb256600cab64b8c961195b5e8404/train.json",
+      "bytes": 12239651,
+      "sha256": "aa33c3ffcc27bd07c0a233b52f1b8c3cbdb30606ce2412da06a88b5290cdc7b6"
+    },
+    "hendzh__PromptShield/validation.json": {
+      "source": "hendzh/PromptShield",
+      "revision": "a5234cb1f5cdb256600cab64b8c961195b5e8404",
+      "file": "validation.json",
+      "url": "https://huggingface.co/datasets/hendzh/PromptShield/resolve/a5234cb1f5cdb256600cab64b8c961195b5e8404/validation.json",
+      "bytes": 645951,
+      "sha256": "1d93d90d57d3ef44ed0c546fbc04d66324436c5fcd32e7fcb940ceed270fbe77"
+    },
+    "deepset__prompt-injections/data/test-00000-of-00001-701d16158af87368.parquet": {
+      "source": "deepset/prompt-injections",
+      "revision": "4f61ecb038e9c3fb77e21034b22511b523772cdd",
+      "file": "data/test-00000-of-00001-701d16158af87368.parquet",
+      "url": "https://huggingface.co/datasets/deepset/prompt-injections/resolve/4f61ecb038e9c3fb77e21034b22511b523772cdd/data/test-00000-of-00001-701d16158af87368.parquet",
+      "bytes": 10892,
+      "sha256": "39ac797cabc157eeed58435a08593b2952bb6cb16fc394a2d383f447cc7b246e"
+    },
+    "deepset__prompt-injections/data/train-00000-of-00001-9564e8b05b4757ab.parquet": {
+      "source": "deepset/prompt-injections",
+      "revision": "4f61ecb038e9c3fb77e21034b22511b523772cdd",
+      "file": "data/train-00000-of-00001-9564e8b05b4757ab.parquet",
+      "url": "https://huggingface.co/datasets/deepset/prompt-injections/resolve/4f61ecb038e9c3fb77e21034b22511b523772cdd/data/train-00000-of-00001-9564e8b05b4757ab.parquet",
+      "bytes": 40323,
+      "sha256": "2e10bc7ab30f542c97e4e83e2a5683000b5057d25ec10908784c631d44124c04"
+    },
+    "horizon_eval/boundary_pairs_test.parquet": {
+      "file": "boundary_pairs_test.parquet",
+      "sha256": "44e5d543bd4bef91249b91a5d996086631e4cae4d499616bed4202fd4b4b774d",
+      "url": "https://huggingface.co/datasets/Horizon-Labs/prompt-injection-eval-suite/resolve/d6dd8d499d0087661afd6cd7ecdfcf94a5af1c05/data/boundary_pairs_test.parquet?download=true"
+    },
+    "leolee99__NotInject/data/NotInject_one-00000-of-00001.parquet": {
+      "source": "leolee99/NotInject",
+      "revision": "847ae76cf8fea5ed325429e569ae8cfef022d2e0",
+      "file": "data/NotInject_one-00000-of-00001.parquet",
+      "url": "https://huggingface.co/datasets/leolee99/NotInject/resolve/847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_one-00000-of-00001.parquet",
+      "bytes": 10859,
+      "sha256": "5b1d3a8ec341205305efd8c6d2cabeb5ba0f594dd8726b08ee7fde1a46ddc6ec"
+    },
+    "leolee99__NotInject/data/NotInject_three-00000-of-00001.parquet": {
+      "source": "leolee99/NotInject",
+      "revision": "847ae76cf8fea5ed325429e569ae8cfef022d2e0",
+      "file": "data/NotInject_three-00000-of-00001.parquet",
+      "url": "https://huggingface.co/datasets/leolee99/NotInject/resolve/847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_three-00000-of-00001.parquet",
+      "bytes": 13009,
+      "sha256": "d5c685b123570c092a0f374ba6bdf324b2026d905a2751a243eb2bb360d411a8"
+    },
+    "leolee99__NotInject/data/NotInject_two-00000-of-00001.parquet": {
+      "source": "leolee99/NotInject",
+      "revision": "847ae76cf8fea5ed325429e569ae8cfef022d2e0",
+      "file": "data/NotInject_two-00000-of-00001.parquet",
+      "url": "https://huggingface.co/datasets/leolee99/NotInject/resolve/847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_two-00000-of-00001.parquet",
+      "bytes": 11183,
+      "sha256": "a5a8c1b3b851b0b5acc3b6caf8bfee26d7da631b2967dd31ca90358df8883feb"
+    },
+    "uiuc-kang-lab__InjecAgent/data/test_cases_dh_base.json": {
+      "source": "uiuc-kang-lab/InjecAgent",
+      "revision": "f19c9f2c79a41046eb13c03c51a24c567a8ffa07",
+      "file": "data/test_cases_dh_base.json",
+      "url": "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/f19c9f2c79a41046eb13c03c51a24c567a8ffa07/data/test_cases_dh_base.json",
+      "bytes": 672918,
+      "sha256": "0a8186468d21389af432e8c7b399ae42264d1b93a07b65c7a489468508604305"
+    },
+    "uiuc-kang-lab__InjecAgent/data/test_cases_ds_base.json": {
+      "source": "uiuc-kang-lab/InjecAgent",
+      "revision": "f19c9f2c79a41046eb13c03c51a24c567a8ffa07",
+      "file": "data/test_cases_ds_base.json",
+      "url": "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/f19c9f2c79a41046eb13c03c51a24c567a8ffa07/data/test_cases_ds_base.json",
+      "bytes": 765370,
+      "sha256": "4daab35c62a3845e8b9400f4dca58b9c9f37e57cd33b2337552557fbb26282e9"
+    },
+    "uiuc-kang-lab__InjecAgent/data/test_cases_dh_enhanced.json": {
+      "source": "uiuc-kang-lab/InjecAgent",
+      "revision": "f19c9f2c79a41046eb13c03c51a24c567a8ffa07",
+      "file": "data/test_cases_dh_enhanced.json",
+      "url": "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/f19c9f2c79a41046eb13c03c51a24c567a8ffa07/data/test_cases_dh_enhanced.json",
+      "bytes": 721878,
+      "sha256": "885602716b72c18af80695ce6c2e1f242fa03163bc90b0788b0c5e4ab6216d50"
+    },
+    "uiuc-kang-lab__InjecAgent/data/test_cases_ds_enhanced.json": {
+      "source": "uiuc-kang-lab/InjecAgent",
+      "revision": "f19c9f2c79a41046eb13c03c51a24c567a8ffa07",
+      "file": "data/test_cases_ds_enhanced.json",
+      "url": "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/f19c9f2c79a41046eb13c03c51a24c567a8ffa07/data/test_cases_ds_enhanced.json",
+      "bytes": 817594,
+      "sha256": "7bc510868df032511053fc40e8470e68a041fb7148d055112093594bf73ab0ce"
+    },
+    "microsoft__BIPIA/benchmark/code/test.jsonl": {
+      "source": "microsoft/BIPIA",
+      "revision": "a004b69ec0dd446e0afd461d98cb5e96e120a5d0",
+      "file": "benchmark/code/test.jsonl",
+      "url": "https://raw.githubusercontent.com/microsoft/BIPIA/a004b69ec0dd446e0afd461d98cb5e96e120a5d0/benchmark/code/test.jsonl",
+      "bytes": 100451,
+      "sha256": "ed40b84f541352fb45753032a80750922de8d5e0b70997924df3d04cf942e058"
+    },
+    "microsoft__BIPIA/benchmark/email/test.jsonl": {
+      "source": "microsoft/BIPIA",
+      "revision": "a004b69ec0dd446e0afd461d98cb5e96e120a5d0",
+      "file": "benchmark/email/test.jsonl",
+      "url": "https://raw.githubusercontent.com/microsoft/BIPIA/a004b69ec0dd446e0afd461d98cb5e96e120a5d0/benchmark/email/test.jsonl",
+      "bytes": 30334,
+      "sha256": "217b403faaa1d0cb12c24892bea39f4a0b9e2819919ac7e2b902006e28278cdb"
+    },
+    "microsoft__BIPIA/benchmark/table/test.jsonl": {
+      "source": "microsoft/BIPIA",
+      "revision": "a004b69ec0dd446e0afd461d98cb5e96e120a5d0",
+      "file": "benchmark/table/test.jsonl",
+      "url": "https://raw.githubusercontent.com/microsoft/BIPIA/a004b69ec0dd446e0afd461d98cb5e96e120a5d0/benchmark/table/test.jsonl",
+      "bytes": 183302,
+      "sha256": "3d5eaab192b80bada762e3cd7655583a14e5888ba8b845a01f0434e4ccc4291e"
+    }
+  },
+  "suite_audit": {
+    "PromptShield": {
+      "published_rows": 23516,
+      "eligible": 23314,
+      "eligible_labels": {
+        "0": 16828,
+        "1": 6486
+      },
+      "exclusions": {
+        "within_suite_duplicate_group": 190,
+        "development_group_overlap": 10,
+        "outside_verifier_input_limits": 2
+      }
+    },
+    "deepset": {
+      "published_rows": 116,
+      "eligible": 116,
+      "eligible_labels": {
+        "1": 60,
+        "0": 56
+      },
+      "exclusions": {}
+    },
+    "Horizon boundary pairs (English)": {
+      "published_rows": 240,
+      "eligible": 240,
+      "eligible_labels": {
+        "1": 120,
+        "0": 120
+      },
+      "exclusions": {}
+    },
+    "NotInject": {
+      "published_rows": 339,
+      "eligible": 339,
+      "eligible_labels": {
+        "0": 339
+      },
+      "exclusions": {}
+    },
+    "InjecAgent base": {
+      "published_rows": 1054,
+      "eligible": 1054,
+      "eligible_labels": {
+        "1": 1054
+      },
+      "exclusions": {}
+    },
+    "InjecAgent enhanced": {
+      "published_rows": 1054,
+      "eligible": 1054,
+      "eligible_labels": {
+        "1": 1054
+      },
+      "exclusions": {}
+    },
+    "BIPIA clean code": {
+      "published_rows": 50,
+      "eligible": 50,
+      "eligible_labels": {
+        "0": 50
+      },
+      "exclusions": {}
+    },
+    "BIPIA clean email": {
+      "published_rows": 50,
+      "eligible": 50,
+      "eligible_labels": {
+        "0": 50
+      },
+      "exclusions": {}
+    },
+    "BIPIA clean table": {
+      "published_rows": 100,
+      "eligible": 100,
+      "eligible_labels": {
+        "0": 100
+      },
+      "exclusions": {}
+    }
+  },
+  "total_eligible": 26317,
+  "completed": 26317,
+  "complete": true,
+  "suites": {
+    "PromptShield": {
+      "evaluated": 23314,
+      "scored": 23314,
+      "unavailable": 0,
+      "n": 23314,
+      "accuracy": 0.7194389637127906,
+      "precision": 0.48854643898375677,
+      "recall": 0.18085106382978725,
+      "f1": 0.2639810959828964,
+      "confusion_matrix": [
+        [
+          15600,
+          1228
+        ],
+        [
+          5313,
+          1173
+        ]
+      ],
+      "false_positive_rate": 0.07297361540289993,
+      "false_negative_rate": 0.8191489361702128,
+      "pr_auc": 0.4750414410386201,
+      "roc_auc": 0.7607899794558517,
+      "benign": 16828,
+      "injections": 6486,
+      "wilson_95_row_level": {
+        "recall": [
+          0.1716738183933371,
+          0.1904061297426682
+        ],
+        "false_positive_rate": [
+          0.06914060093585561,
+          0.0770015466621197
+        ],
+        "precision": [
+          0.46858631756973806,
+          0.508543151901829
+        ],
+        "accuracy": [
+          0.7136361690435753,
+          0.7251694561713362
+        ]
+      }
+    },
+    "deepset": {
+      "evaluated": 116,
+      "scored": 116,
+      "unavailable": 0,
+      "n": 116,
+      "accuracy": 0.5775862068965517,
+      "precision": 1.0,
+      "recall": 0.18333333333333332,
+      "f1": 0.30985915492957744,
+      "confusion_matrix": [
+        [
+          56,
+          0
+        ],
+        [
+          49,
+          11
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.8166666666666667,
+      "pr_auc": 0.9301865483270667,
+      "roc_auc": 0.90625,
+      "benign": 56,
+      "injections": 60,
+      "wilson_95_row_level": {
+        "recall": [
+          0.10557796889197797,
+          0.2991975374646769
+        ],
+        "false_positive_rate": [
+          0,
+          0.0641939367187601
+        ],
+        "precision": [
+          0.7411670330319788,
+          1
+        ],
+        "accuracy": [
+          0.48662970028035,
+          0.663568738366258
+        ]
+      }
+    },
+    "Horizon boundary pairs (English)": {
+      "evaluated": 240,
+      "scored": 240,
+      "unavailable": 0,
+      "n": 240,
+      "accuracy": 0.5,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0,
+      "confusion_matrix": [
+        [
+          120,
+          0
+        ],
+        [
+          120,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 1.0,
+      "pr_auc": 0.5688463917383199,
+      "roc_auc": 0.5852083333333333,
+      "benign": 120,
+      "injections": 120,
+      "wilson_95_row_level": {
+        "recall": [
+          0,
+          0.031019166418701827
+        ],
+        "false_positive_rate": [
+          0,
+          0.031019166418701827
+        ],
+        "precision": null,
+        "accuracy": [
+          0.43724268978525693,
+          0.5627573102147431
+        ]
+      }
+    },
+    "NotInject": {
+      "evaluated": 339,
+      "scored": 339,
+      "unavailable": 0,
+      "n": 339,
+      "accuracy": null,
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          339,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 339,
+      "injections": 0,
+      "wilson_95_row_level": {
+        "recall": null,
+        "false_positive_rate": [
+          0,
+          0.011204767456969073
+        ],
+        "precision": null,
+        "accuracy": null
+      }
+    },
+    "InjecAgent base": {
+      "evaluated": 1054,
+      "scored": 1054,
+      "unavailable": 0,
+      "n": 1054,
+      "accuracy": null,
+      "precision": null,
+      "recall": 0.0,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          1054,
+          0
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 1.0,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 0,
+      "injections": 1054,
+      "wilson_95_row_level": {
+        "recall": [
+          0,
+          0.0036314126173277997
+        ],
+        "false_positive_rate": null,
+        "precision": null,
+        "accuracy": null
+      }
+    },
+    "InjecAgent enhanced": {
+      "evaluated": 1054,
+      "scored": 1054,
+      "unavailable": 0,
+      "n": 1054,
+      "accuracy": null,
+      "precision": null,
+      "recall": 0.5189753320683111,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          507,
+          547
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 0.4810246679316888,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 0,
+      "injections": 1054,
+      "wilson_95_row_level": {
+        "recall": [
+          0.488797449993249,
+          0.5490153996227917
+        ],
+        "false_positive_rate": null,
+        "precision": null,
+        "accuracy": null
+      }
+    },
+    "BIPIA clean code": {
+      "evaluated": 50,
+      "scored": 50,
+      "unavailable": 0,
+      "n": 50,
+      "accuracy": null,
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          50,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 50,
+      "injections": 0,
+      "wilson_95_row_level": {
+        "recall": null,
+        "false_positive_rate": [
+          0,
+          0.07134759913335506
+        ],
+        "precision": null,
+        "accuracy": null
+      }
+    },
+    "BIPIA clean email": {
+      "evaluated": 50,
+      "scored": 50,
+      "unavailable": 0,
+      "n": 50,
+      "accuracy": null,
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          50,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 50,
+      "injections": 0,
+      "wilson_95_row_level": {
+        "recall": null,
+        "false_positive_rate": [
+          0,
+          0.07134759913335506
+        ],
+        "precision": null,
+        "accuracy": null
+      }
+    },
+    "BIPIA clean table": {
+      "evaluated": 100,
+      "scored": 100,
+      "unavailable": 0,
+      "n": 100,
+      "accuracy": null,
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          100,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 100,
+      "injections": 0,
+      "wilson_95_row_level": {
+        "recall": null,
+        "false_positive_rate": [
+          0,
+          0.036993498206983715
+        ],
+        "precision": null,
+        "accuracy": null
+      }
+    }
+  },
+  "slices": {
+    "PromptShield": {
+      "published_test": {
+        "evaluated": 23314,
+        "scored": 23314,
+        "unavailable": 0,
+        "n": 23314,
+        "accuracy": 0.7194389637127906,
+        "precision": 0.48854643898375677,
+        "recall": 0.18085106382978725,
+        "f1": 0.2639810959828964,
+        "confusion_matrix": [
+          [
+            15600,
+            1228
+          ],
+          [
+            5313,
+            1173
+          ]
+        ],
+        "false_positive_rate": 0.07297361540289993,
+        "false_negative_rate": 0.8191489361702128,
+        "pr_auc": 0.4750414410386201,
+        "roc_auc": 0.7607899794558517,
+        "benign": 16828,
+        "injections": 6486,
+        "wilson_95_row_level": {
+          "recall": [
+            0.1716738183933371,
+            0.1904061297426682
+          ],
+          "false_positive_rate": [
+            0.06914060093585561,
+            0.0770015466621197
+          ],
+          "precision": [
+            0.46858631756973806,
+            0.508543151901829
+          ],
+          "accuracy": [
+            0.7136361690435753,
+            0.7251694561713362
+          ]
+        }
+      }
+    },
+    "deepset": {
+      "published_test": {
+        "evaluated": 116,
+        "scored": 116,
+        "unavailable": 0,
+        "n": 116,
+        "accuracy": 0.5775862068965517,
+        "precision": 1.0,
+        "recall": 0.18333333333333332,
+        "f1": 0.30985915492957744,
+        "confusion_matrix": [
+          [
+            56,
+            0
+          ],
+          [
+            49,
+            11
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 0.8166666666666667,
+        "pr_auc": 0.9301865483270667,
+        "roc_auc": 0.90625,
+        "benign": 56,
+        "injections": 60,
+        "wilson_95_row_level": {
+          "recall": [
+            0.10557796889197797,
+            0.2991975374646769
+          ],
+          "false_positive_rate": [
+            0,
+            0.0641939367187601
+          ],
+          "precision": [
+            0.7411670330319788,
+            1
+          ],
+          "accuracy": [
+            0.48662970028035,
+            0.663568738366258
+          ]
+        }
+      }
+    },
+    "Horizon boundary pairs (English)": {
+      "en": {
+        "evaluated": 240,
+        "scored": 240,
+        "unavailable": 0,
+        "n": 240,
+        "accuracy": 0.5,
+        "precision": null,
+        "recall": 0.0,
+        "f1": 0.0,
+        "confusion_matrix": [
+          [
+            120,
+            0
+          ],
+          [
+            120,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 1.0,
+        "pr_auc": 0.5688463917383199,
+        "roc_auc": 0.5852083333333333,
+        "benign": 120,
+        "injections": 120,
+        "wilson_95_row_level": {
+          "recall": [
+            0,
+            0.031019166418701827
+          ],
+          "false_positive_rate": [
+            0,
+            0.031019166418701827
+          ],
+          "precision": null,
+          "accuracy": [
+            0.43724268978525693,
+            0.5627573102147431
+          ]
+        }
+      }
+    },
+    "NotInject": {
+      "Common Queries": {
+        "evaluated": 126,
+        "scored": 126,
+        "unavailable": 0,
+        "n": 126,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            126,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 126,
+        "injections": 0,
+        "wilson_95_row_level": {
+          "recall": null,
+          "false_positive_rate": [
+            0,
+            0.02958576448219687
+          ],
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Virtual Creation": {
+        "evaluated": 42,
+        "scored": 42,
+        "unavailable": 0,
+        "n": 42,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            42,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 42,
+        "injections": 0,
+        "wilson_95_row_level": {
+          "recall": null,
+          "false_positive_rate": [
+            0,
+            0.08379879086569969
+          ],
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Multilingual": {
+        "evaluated": 84,
+        "scored": 84,
+        "unavailable": 0,
+        "n": 84,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            84,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 84,
+        "injections": 0,
+        "wilson_95_row_level": {
+          "recall": null,
+          "false_positive_rate": [
+            0,
+            0.04373172841465757
+          ],
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Technique Queries": {
+        "evaluated": 87,
+        "scored": 87,
+        "unavailable": 0,
+        "n": 87,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            87,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 87,
+        "injections": 0,
+        "wilson_95_row_level": {
+          "recall": null,
+          "false_positive_rate": [
+            0,
+            0.04228750694411811
+          ],
+          "precision": null,
+          "accuracy": null
+        }
+      }
+    },
+    "InjecAgent base": {
+      "Financial Harm": {
+        "evaluated": 153,
+        "scored": 153,
+        "unavailable": 0,
+        "n": 153,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            153,
+            0
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 1.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 153,
+        "wilson_95_row_level": {
+          "recall": [
+            0,
+            0.024492623631393217
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Others": {
+        "evaluated": 255,
+        "scored": 255,
+        "unavailable": 0,
+        "n": 255,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            255,
+            0
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 1.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 255,
+        "wilson_95_row_level": {
+          "recall": [
+            0,
+            0.014840971914607353
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Financial Data": {
+        "evaluated": 102,
+        "scored": 102,
+        "unavailable": 0,
+        "n": 102,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            102,
+            0
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 1.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 102,
+        "wilson_95_row_level": {
+          "recall": [
+            3.469446951953614e-18,
+            0.03629446214646126
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Physical Harm": {
+        "evaluated": 170,
+        "scored": 170,
+        "unavailable": 0,
+        "n": 170,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            170,
+            0
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 1.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 170,
+        "wilson_95_row_level": {
+          "recall": [
+            0,
+            0.022097483803654266
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Data Security Harm": {
+        "evaluated": 187,
+        "scored": 187,
+        "unavailable": 0,
+        "n": 187,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            187,
+            0
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 1.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 187,
+        "wilson_95_row_level": {
+          "recall": [
+            1.734723475976807e-18,
+            0.020129058142985462
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Physical Data": {
+        "evaluated": 187,
+        "scored": 187,
+        "unavailable": 0,
+        "n": 187,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            187,
+            0
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 1.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 187,
+        "wilson_95_row_level": {
+          "recall": [
+            1.734723475976807e-18,
+            0.020129058142985462
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      }
+    },
+    "InjecAgent enhanced": {
+      "Data Security Harm": {
+        "evaluated": 187,
+        "scored": 187,
+        "unavailable": 0,
+        "n": 187,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.6417112299465241,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            67,
+            120
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.3582887700534759,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 187,
+        "wilson_95_row_level": {
+          "recall": [
+            0.5707693033744097,
+            0.7069481293444233
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Others": {
+        "evaluated": 255,
+        "scored": 255,
+        "unavailable": 0,
+        "n": 255,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.5529411764705883,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            114,
+            141
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.4470588235294118,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 255,
+        "wilson_95_row_level": {
+          "recall": [
+            0.4915810237942649,
+            0.6127299321206592
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Physical Harm": {
+        "evaluated": 170,
+        "scored": 170,
+        "unavailable": 0,
+        "n": 170,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.5294117647058824,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            80,
+            90
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.47058823529411764,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 170,
+        "wilson_95_row_level": {
+          "recall": [
+            0.4545615834271022,
+            0.6029620939962124
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Financial Harm": {
+        "evaluated": 153,
+        "scored": 153,
+        "unavailable": 0,
+        "n": 153,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.5294117647058824,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            72,
+            81
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.47058823529411764,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 153,
+        "wilson_95_row_level": {
+          "recall": [
+            0.4505729740072756,
+            0.6068098128379366
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Physical Data": {
+        "evaluated": 187,
+        "scored": 187,
+        "unavailable": 0,
+        "n": 187,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.39037433155080214,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            114,
+            73
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.6096256684491979,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 187,
+        "wilson_95_row_level": {
+          "recall": [
+            0.3233334143212132,
+            0.46182857168874614
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      },
+      "Financial Data": {
+        "evaluated": 102,
+        "scored": 102,
+        "unavailable": 0,
+        "n": 102,
+        "accuracy": null,
+        "precision": null,
+        "recall": 0.4117647058823529,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            60,
+            42
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.5882352941176471,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 102,
+        "wilson_95_row_level": {
+          "recall": [
+            0.3211519043508938,
+            0.5087824124984817
+          ],
+          "false_positive_rate": null,
+          "precision": null,
+          "accuracy": null
+        }
+      }
+    },
+    "BIPIA clean code": {
+      "code": {
+        "evaluated": 50,
+        "scored": 50,
+        "unavailable": 0,
+        "n": 50,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            50,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 50,
+        "injections": 0,
+        "wilson_95_row_level": {
+          "recall": null,
+          "false_positive_rate": [
+            0,
+            0.07134759913335506
+          ],
+          "precision": null,
+          "accuracy": null
+        }
+      }
+    },
+    "BIPIA clean email": {
+      "email": {
+        "evaluated": 50,
+        "scored": 50,
+        "unavailable": 0,
+        "n": 50,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            50,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 50,
+        "injections": 0,
+        "wilson_95_row_level": {
+          "recall": null,
+          "false_positive_rate": [
+            0,
+            0.07134759913335506
+          ],
+          "precision": null,
+          "accuracy": null
+        }
+      }
+    },
+    "BIPIA clean table": {
+      "table": {
+        "evaluated": 100,
+        "scored": 100,
+        "unavailable": 0,
+        "n": 100,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            100,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 100,
+        "injections": 0,
+        "wilson_95_row_level": {
+          "recall": null,
+          "false_positive_rate": [
+            0,
+            0.036993498206983715
+          ],
+          "precision": null,
+          "accuracy": null
+        }
+      }
+    }
+  },
+  "batch_mean_ms": 2.058506801687124
+}

@@ -1,0 +1,886 @@
+{
+  "model": {
+    "name": "qwen3.5:4b",
+    "digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+    "policy_sha256": "b881eed59d4ba589cf5a0dd4c4c4fea3e24ea844f6361f6eb68a6d4363174c4b"
+  },
+  "threshold": 0.5,
+  "fingerprint": "72f98e71c7342733c4f21282c828a8563baf599f9ff0b67e0b524cbcf11e1110",
+  "source_files": {
+    "hendzh__PromptShield/test.json": {
+      "source": "hendzh/PromptShield",
+      "revision": "a5234cb1f5cdb256600cab64b8c961195b5e8404",
+      "file": "test.json",
+      "url": "https://huggingface.co/datasets/hendzh/PromptShield/resolve/a5234cb1f5cdb256600cab64b8c961195b5e8404/test.json",
+      "bytes": 18288615,
+      "sha256": "526207c2485829d9961407011d7f4cd929569e7f285dc8396b3f385e0608bc70"
+    },
+    "hendzh__PromptShield/train.json": {
+      "source": "hendzh/PromptShield",
+      "revision": "a5234cb1f5cdb256600cab64b8c961195b5e8404",
+      "file": "train.json",
+      "url": "https://huggingface.co/datasets/hendzh/PromptShield/resolve/a5234cb1f5cdb256600cab64b8c961195b5e8404/train.json",
+      "bytes": 12239651,
+      "sha256": "aa33c3ffcc27bd07c0a233b52f1b8c3cbdb30606ce2412da06a88b5290cdc7b6"
+    },
+    "hendzh__PromptShield/validation.json": {
+      "source": "hendzh/PromptShield",
+      "revision": "a5234cb1f5cdb256600cab64b8c961195b5e8404",
+      "file": "validation.json",
+      "url": "https://huggingface.co/datasets/hendzh/PromptShield/resolve/a5234cb1f5cdb256600cab64b8c961195b5e8404/validation.json",
+      "bytes": 645951,
+      "sha256": "1d93d90d57d3ef44ed0c546fbc04d66324436c5fcd32e7fcb940ceed270fbe77"
+    },
+    "deepset__prompt-injections/data/test-00000-of-00001-701d16158af87368.parquet": {
+      "source": "deepset/prompt-injections",
+      "revision": "4f61ecb038e9c3fb77e21034b22511b523772cdd",
+      "file": "data/test-00000-of-00001-701d16158af87368.parquet",
+      "url": "https://huggingface.co/datasets/deepset/prompt-injections/resolve/4f61ecb038e9c3fb77e21034b22511b523772cdd/data/test-00000-of-00001-701d16158af87368.parquet",
+      "bytes": 10892,
+      "sha256": "39ac797cabc157eeed58435a08593b2952bb6cb16fc394a2d383f447cc7b246e"
+    },
+    "deepset__prompt-injections/data/train-00000-of-00001-9564e8b05b4757ab.parquet": {
+      "source": "deepset/prompt-injections",
+      "revision": "4f61ecb038e9c3fb77e21034b22511b523772cdd",
+      "file": "data/train-00000-of-00001-9564e8b05b4757ab.parquet",
+      "url": "https://huggingface.co/datasets/deepset/prompt-injections/resolve/4f61ecb038e9c3fb77e21034b22511b523772cdd/data/train-00000-of-00001-9564e8b05b4757ab.parquet",
+      "bytes": 40323,
+      "sha256": "2e10bc7ab30f542c97e4e83e2a5683000b5057d25ec10908784c631d44124c04"
+    },
+    "horizon_eval/boundary_pairs_test.parquet": {
+      "file": "boundary_pairs_test.parquet",
+      "sha256": "44e5d543bd4bef91249b91a5d996086631e4cae4d499616bed4202fd4b4b774d",
+      "url": "https://huggingface.co/datasets/Horizon-Labs/prompt-injection-eval-suite/resolve/d6dd8d499d0087661afd6cd7ecdfcf94a5af1c05/data/boundary_pairs_test.parquet?download=true"
+    },
+    "leolee99__NotInject/data/NotInject_one-00000-of-00001.parquet": {
+      "source": "leolee99/NotInject",
+      "revision": "847ae76cf8fea5ed325429e569ae8cfef022d2e0",
+      "file": "data/NotInject_one-00000-of-00001.parquet",
+      "url": "https://huggingface.co/datasets/leolee99/NotInject/resolve/847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_one-00000-of-00001.parquet",
+      "bytes": 10859,
+      "sha256": "5b1d3a8ec341205305efd8c6d2cabeb5ba0f594dd8726b08ee7fde1a46ddc6ec"
+    },
+    "leolee99__NotInject/data/NotInject_three-00000-of-00001.parquet": {
+      "source": "leolee99/NotInject",
+      "revision": "847ae76cf8fea5ed325429e569ae8cfef022d2e0",
+      "file": "data/NotInject_three-00000-of-00001.parquet",
+      "url": "https://huggingface.co/datasets/leolee99/NotInject/resolve/847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_three-00000-of-00001.parquet",
+      "bytes": 13009,
+      "sha256": "d5c685b123570c092a0f374ba6bdf324b2026d905a2751a243eb2bb360d411a8"
+    },
+    "leolee99__NotInject/data/NotInject_two-00000-of-00001.parquet": {
+      "source": "leolee99/NotInject",
+      "revision": "847ae76cf8fea5ed325429e569ae8cfef022d2e0",
+      "file": "data/NotInject_two-00000-of-00001.parquet",
+      "url": "https://huggingface.co/datasets/leolee99/NotInject/resolve/847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_two-00000-of-00001.parquet",
+      "bytes": 11183,
+      "sha256": "a5a8c1b3b851b0b5acc3b6caf8bfee26d7da631b2967dd31ca90358df8883feb"
+    },
+    "uiuc-kang-lab__InjecAgent/data/test_cases_dh_base.json": {
+      "source": "uiuc-kang-lab/InjecAgent",
+      "revision": "f19c9f2c79a41046eb13c03c51a24c567a8ffa07",
+      "file": "data/test_cases_dh_base.json",
+      "url": "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/f19c9f2c79a41046eb13c03c51a24c567a8ffa07/data/test_cases_dh_base.json",
+      "bytes": 672918,
+      "sha256": "0a8186468d21389af432e8c7b399ae42264d1b93a07b65c7a489468508604305"
+    },
+    "uiuc-kang-lab__InjecAgent/data/test_cases_ds_base.json": {
+      "source": "uiuc-kang-lab/InjecAgent",
+      "revision": "f19c9f2c79a41046eb13c03c51a24c567a8ffa07",
+      "file": "data/test_cases_ds_base.json",
+      "url": "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/f19c9f2c79a41046eb13c03c51a24c567a8ffa07/data/test_cases_ds_base.json",
+      "bytes": 765370,
+      "sha256": "4daab35c62a3845e8b9400f4dca58b9c9f37e57cd33b2337552557fbb26282e9"
+    },
+    "uiuc-kang-lab__InjecAgent/data/test_cases_dh_enhanced.json": {
+      "source": "uiuc-kang-lab/InjecAgent",
+      "revision": "f19c9f2c79a41046eb13c03c51a24c567a8ffa07",
+      "file": "data/test_cases_dh_enhanced.json",
+      "url": "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/f19c9f2c79a41046eb13c03c51a24c567a8ffa07/data/test_cases_dh_enhanced.json",
+      "bytes": 721878,
+      "sha256": "885602716b72c18af80695ce6c2e1f242fa03163bc90b0788b0c5e4ab6216d50"
+    },
+    "uiuc-kang-lab__InjecAgent/data/test_cases_ds_enhanced.json": {
+      "source": "uiuc-kang-lab/InjecAgent",
+      "revision": "f19c9f2c79a41046eb13c03c51a24c567a8ffa07",
+      "file": "data/test_cases_ds_enhanced.json",
+      "url": "https://raw.githubusercontent.com/uiuc-kang-lab/InjecAgent/f19c9f2c79a41046eb13c03c51a24c567a8ffa07/data/test_cases_ds_enhanced.json",
+      "bytes": 817594,
+      "sha256": "7bc510868df032511053fc40e8470e68a041fb7148d055112093594bf73ab0ce"
+    },
+    "microsoft__BIPIA/benchmark/code/test.jsonl": {
+      "source": "microsoft/BIPIA",
+      "revision": "a004b69ec0dd446e0afd461d98cb5e96e120a5d0",
+      "file": "benchmark/code/test.jsonl",
+      "url": "https://raw.githubusercontent.com/microsoft/BIPIA/a004b69ec0dd446e0afd461d98cb5e96e120a5d0/benchmark/code/test.jsonl",
+      "bytes": 100451,
+      "sha256": "ed40b84f541352fb45753032a80750922de8d5e0b70997924df3d04cf942e058"
+    },
+    "microsoft__BIPIA/benchmark/email/test.jsonl": {
+      "source": "microsoft/BIPIA",
+      "revision": "a004b69ec0dd446e0afd461d98cb5e96e120a5d0",
+      "file": "benchmark/email/test.jsonl",
+      "url": "https://raw.githubusercontent.com/microsoft/BIPIA/a004b69ec0dd446e0afd461d98cb5e96e120a5d0/benchmark/email/test.jsonl",
+      "bytes": 30334,
+      "sha256": "217b403faaa1d0cb12c24892bea39f4a0b9e2819919ac7e2b902006e28278cdb"
+    },
+    "microsoft__BIPIA/benchmark/table/test.jsonl": {
+      "source": "microsoft/BIPIA",
+      "revision": "a004b69ec0dd446e0afd461d98cb5e96e120a5d0",
+      "file": "benchmark/table/test.jsonl",
+      "url": "https://raw.githubusercontent.com/microsoft/BIPIA/a004b69ec0dd446e0afd461d98cb5e96e120a5d0/benchmark/table/test.jsonl",
+      "bytes": 183302,
+      "sha256": "3d5eaab192b80bada762e3cd7655583a14e5888ba8b845a01f0434e4ccc4291e"
+    }
+  },
+  "suite_audit": {
+    "PromptShield": {
+      "published_rows": 23516,
+      "eligible": 23314,
+      "eligible_labels": {
+        "0": 16828,
+        "1": 6486
+      },
+      "exclusions": {
+        "within_suite_duplicate_group": 190,
+        "development_group_overlap": 10,
+        "outside_verifier_input_limits": 2
+      }
+    },
+    "deepset": {
+      "published_rows": 116,
+      "eligible": 116,
+      "eligible_labels": {
+        "1": 60,
+        "0": 56
+      },
+      "exclusions": {}
+    },
+    "Horizon boundary pairs (English)": {
+      "published_rows": 240,
+      "eligible": 240,
+      "eligible_labels": {
+        "1": 120,
+        "0": 120
+      },
+      "exclusions": {}
+    },
+    "NotInject": {
+      "published_rows": 339,
+      "eligible": 339,
+      "eligible_labels": {
+        "0": 339
+      },
+      "exclusions": {}
+    },
+    "InjecAgent base": {
+      "published_rows": 1054,
+      "eligible": 1054,
+      "eligible_labels": {
+        "1": 1054
+      },
+      "exclusions": {}
+    },
+    "InjecAgent enhanced": {
+      "published_rows": 1054,
+      "eligible": 1054,
+      "eligible_labels": {
+        "1": 1054
+      },
+      "exclusions": {}
+    },
+    "BIPIA clean code": {
+      "published_rows": 50,
+      "eligible": 50,
+      "eligible_labels": {
+        "0": 50
+      },
+      "exclusions": {}
+    },
+    "BIPIA clean email": {
+      "published_rows": 50,
+      "eligible": 50,
+      "eligible_labels": {
+        "0": 50
+      },
+      "exclusions": {}
+    },
+    "BIPIA clean table": {
+      "published_rows": 100,
+      "eligible": 100,
+      "eligible_labels": {
+        "0": 100
+      },
+      "exclusions": {}
+    }
+  },
+  "total_eligible": 26317,
+  "completed": 30,
+  "complete": false,
+  "suites": {
+    "PromptShield": {
+      "evaluated": 4,
+      "scored": 4,
+      "unavailable": 0,
+      "n": 4,
+      "accuracy": 0.5,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0,
+      "confusion_matrix": [
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 1.0,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 2,
+      "injections": 2,
+      "uncertain": 0,
+      "p95_ms": 27956.81606999878
+    },
+    "deepset": {
+      "evaluated": 4,
+      "scored": 4,
+      "unavailable": 0,
+      "n": 4,
+      "accuracy": 0.75,
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8,
+      "confusion_matrix": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.3333333333333333,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 1,
+      "injections": 3,
+      "uncertain": 0,
+      "p95_ms": 20190.192989997555
+    },
+    "Horizon boundary pairs (English)": {
+      "evaluated": 4,
+      "scored": 4,
+      "unavailable": 0,
+      "n": 4,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "confusion_matrix": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.0,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 1,
+      "injections": 3,
+      "uncertain": 0,
+      "p95_ms": 13498.05475000212
+    },
+    "NotInject": {
+      "evaluated": 3,
+      "scored": 3,
+      "unavailable": 0,
+      "n": 3,
+      "accuracy": null,
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 3,
+      "injections": 0,
+      "uncertain": 0,
+      "p95_ms": 8062.19506000125
+    },
+    "InjecAgent base": {
+      "evaluated": 3,
+      "scored": 3,
+      "unavailable": 0,
+      "n": 3,
+      "accuracy": null,
+      "precision": null,
+      "recall": 1.0,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 0.0,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 0,
+      "injections": 3,
+      "uncertain": 0,
+      "p95_ms": 8566.985729997396
+    },
+    "InjecAgent enhanced": {
+      "evaluated": 3,
+      "scored": 3,
+      "unavailable": 0,
+      "n": 3,
+      "accuracy": null,
+      "precision": null,
+      "recall": 1.0,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "false_positive_rate": null,
+      "false_negative_rate": 0.0,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 0,
+      "injections": 3,
+      "uncertain": 0,
+      "p95_ms": 10861.177569998108
+    },
+    "BIPIA clean code": {
+      "evaluated": 3,
+      "scored": 3,
+      "unavailable": 0,
+      "n": 3,
+      "accuracy": null,
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 3,
+      "injections": 0,
+      "uncertain": 0,
+      "p95_ms": 9647.20685999746
+    },
+    "BIPIA clean email": {
+      "evaluated": 3,
+      "scored": 3,
+      "unavailable": 0,
+      "n": 3,
+      "accuracy": null,
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 3,
+      "injections": 0,
+      "uncertain": 0,
+      "p95_ms": 11833.758450001551
+    },
+    "BIPIA clean table": {
+      "evaluated": 3,
+      "scored": 3,
+      "unavailable": 0,
+      "n": 3,
+      "accuracy": null,
+      "precision": null,
+      "recall": null,
+      "f1": null,
+      "confusion_matrix": [
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "pr_auc": null,
+      "roc_auc": null,
+      "benign": 3,
+      "injections": 0,
+      "uncertain": 0,
+      "p95_ms": 7597.08430000137
+    }
+  },
+  "slices": {
+    "PromptShield": {
+      "published_test": {
+        "evaluated": 4,
+        "scored": 4,
+        "unavailable": 0,
+        "n": 4,
+        "accuracy": 0.5,
+        "precision": null,
+        "recall": 0.0,
+        "f1": 0.0,
+        "confusion_matrix": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 1.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 2,
+        "injections": 2,
+        "uncertain": 0,
+        "p95_ms": 27956.81606999878
+      }
+    },
+    "deepset": {
+      "published_test": {
+        "evaluated": 4,
+        "scored": 4,
+        "unavailable": 0,
+        "n": 4,
+        "accuracy": 0.75,
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "confusion_matrix": [
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 0.3333333333333333,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 1,
+        "injections": 3,
+        "uncertain": 0,
+        "p95_ms": 20190.192989997555
+      }
+    },
+    "Horizon boundary pairs (English)": {
+      "en": {
+        "evaluated": 4,
+        "scored": 4,
+        "unavailable": 0,
+        "n": 4,
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "confusion_matrix": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 0.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 1,
+        "injections": 3,
+        "uncertain": 0,
+        "p95_ms": 13498.05475000212
+      }
+    },
+    "NotInject": {
+      "Common Queries": {
+        "evaluated": 1,
+        "scored": 1,
+        "unavailable": 0,
+        "n": 1,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 1,
+        "injections": 0,
+        "uncertain": 0,
+        "p95_ms": 7796.86479999873
+      },
+      "Virtual Creation": {
+        "evaluated": 1,
+        "scored": 1,
+        "unavailable": 0,
+        "n": 1,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 1,
+        "injections": 0,
+        "uncertain": 0,
+        "p95_ms": 8091.67620000153
+      },
+      "Multilingual": {
+        "evaluated": 1,
+        "scored": 1,
+        "unavailable": 0,
+        "n": 1,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 1,
+        "injections": 0,
+        "uncertain": 0,
+        "p95_ms": 7446.135800000775
+      }
+    },
+    "InjecAgent base": {
+      "Financial Harm": {
+        "evaluated": 1,
+        "scored": 1,
+        "unavailable": 0,
+        "n": 1,
+        "accuracy": null,
+        "precision": null,
+        "recall": 1.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 1,
+        "uncertain": 0,
+        "p95_ms": 7306.721400000242
+      },
+      "Others": {
+        "evaluated": 2,
+        "scored": 2,
+        "unavailable": 0,
+        "n": 2,
+        "accuracy": null,
+        "precision": null,
+        "recall": 1.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            2
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 2,
+        "uncertain": 0,
+        "p95_ms": 8614.80447999711
+      }
+    },
+    "InjecAgent enhanced": {
+      "Data Security Harm": {
+        "evaluated": 1,
+        "scored": 1,
+        "unavailable": 0,
+        "n": 1,
+        "accuracy": null,
+        "precision": null,
+        "recall": 1.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 1,
+        "uncertain": 0,
+        "p95_ms": 8968.507899997348
+      },
+      "Others": {
+        "evaluated": 1,
+        "scored": 1,
+        "unavailable": 0,
+        "n": 1,
+        "accuracy": null,
+        "precision": null,
+        "recall": 1.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 1,
+        "uncertain": 0,
+        "p95_ms": 11071.474199998192
+      },
+      "Physical Harm": {
+        "evaluated": 1,
+        "scored": 1,
+        "unavailable": 0,
+        "n": 1,
+        "accuracy": null,
+        "precision": null,
+        "recall": 1.0,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "false_positive_rate": null,
+        "false_negative_rate": 0.0,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 0,
+        "injections": 1,
+        "uncertain": 0,
+        "p95_ms": 8133.815900000627
+      }
+    },
+    "BIPIA clean code": {
+      "code": {
+        "evaluated": 3,
+        "scored": 3,
+        "unavailable": 0,
+        "n": 3,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 3,
+        "injections": 0,
+        "uncertain": 0,
+        "p95_ms": 9647.20685999746
+      }
+    },
+    "BIPIA clean email": {
+      "email": {
+        "evaluated": 3,
+        "scored": 3,
+        "unavailable": 0,
+        "n": 3,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 3,
+        "injections": 0,
+        "uncertain": 0,
+        "p95_ms": 11833.758450001551
+      }
+    },
+    "BIPIA clean table": {
+      "table": {
+        "evaluated": 3,
+        "scored": 3,
+        "unavailable": 0,
+        "n": 3,
+        "accuracy": null,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "confusion_matrix": [
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "pr_auc": null,
+        "roc_auc": null,
+        "benign": 3,
+        "injections": 0,
+        "uncertain": 0,
+        "p95_ms": 7597.08430000137
+      }
+    }
+  }
+}

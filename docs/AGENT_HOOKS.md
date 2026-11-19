@@ -28,7 +28,10 @@ By default, install [Ollama](https://ollama.com/download) on the same device,
 start it and run `ollama pull qwen3.5:4b`. The guard uses Ollama to classify
 text. Codex and Antigravity continue to use their own answering models. No
 dashboard or gateway needs to run. An unavailable classifier causes the hook
-to withhold text when it can return a decision.
+to withhold text when it can return a decision. The first Ollama call can take
+longer while the model loads. Generated Ollama hooks use a 90-second model
+request timeout and a 110-second host timeout. Rerun installation to update
+an existing hook, then review the changed command in the agent.
 
 From the root of the workspace to protect, run the applicable command:
 
@@ -37,11 +40,17 @@ ai-security-middleware install codex
 ai-security-middleware install antigravity
 ```
 
-Use `--workspace <path>` to target another directory. Commands default to POSIX
-shell syntax on macOS and Linux and PowerShell syntax on Windows. Pass
-`--shell posix` or `--shell powershell` if the agent runs hooks via a different
-shell. With `--detector rules`, the guard runs without Ollama using the existing
+Use `--workspace <path>` to target another directory. On Windows, Codex uses
+PowerShell syntax and Antigravity uses Command Prompt syntax. On macOS and Linux
+both default to POSIX shell syntax. Use `--shell` to override the shell where
+needed. With `--detector rules`, the guard runs without Ollama using the existing
 text rules only. Use that mode to smoke-test the setup on a device without the model.
+
+To see hook decisions in the desktop dashboard, install the hook with
+`--audit-db <absolute-path-to-security_events.db>`. Point it at the same file
+as the dashboard and, if used, the gateway. The hook records the integration,
+screened input type, and decision without storing prompt or tool-result text.
+See [standalone setup](STANDALONE_SETUP.md) for the default gateway paths.
 
 Restart or reopen the agent in that workspace. For Codex, trust the project and
 review and trust the two generated commands in `/hooks`. For Antigravity, check

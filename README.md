@@ -6,6 +6,11 @@ For an installable prompt guard for Codex and Google Antigravity, see the
 [cross-platform agent setup](docs/AGENT_HOOKS.md). The hooks use the agent's own
 answering model and can be installed independently of the dashboard and gateway.
 
+The Rust desktop dashboard reads security events from a local SQLite file. It
+can run without Python, Streamlit, a running gateway, or Ollama. See
+[downloads and standalone setup](docs/STANDALONE_SETUP.md) for the dashboard,
+installable gateway, and shared audit configuration.
+
 ## Objectives
 
 - Make prompt-injection screening installable on another machine without copying development paths, local datasets, or model artifacts.
@@ -60,7 +65,7 @@ Open the local URL printed by Streamlit. Stop either service with Ctrl+C.
 | HTTP middleware | Bounded non-streaming text gateway; fixed local model; all supplied roles inspected |
 | Python adapter | `PromptSecurityMiddleware` and `SecureChatClient` screen context before model calls |
 | Inspection | Validation, normalization, encoding checks, rules, optional ML/Qwen evidence |
-| Dashboard | Text analysis, protected model tests, retrieval, review queue, security events |
+| Dashboards | Rust desktop viewer for security events and analytics. The legacy Streamlit dashboard provides analysis, retrieval, and review controls. |
 | Human review | Exact-excerpt approval, provenance/sensitivity preservation, explicit rechecked continuation |
 | Controlled tools | Independent gateway for fixed document/SQLite/draft-only operations |
 | Evaluation | Reproducible research experiments; candidates do not automatically replace deployed models |
@@ -83,7 +88,7 @@ Use the [HTTP integration guide](docs/MIDDLEWARE_USAGE.md) for request examples,
 ## Scope and limits
 
 - Workspace installation is opt-in. Hook coverage is limited to the inputs each agent exposes. Antigravity's native hook cannot screen tool results. Attachments and unhooked context are outside coverage.
-- The hook package targets Windows, macOS, and Linux. The wheel and generated commands were smoke-tested in rules mode on Windows. Live agent sessions, Ollama-backed hook execution, and macOS/Linux runs still need verification.
+- The hook package targets Windows, macOS, and Linux. The Windows wheel and generated commands passed rules-mode fixtures, and the installed hook handlers passed benign fixtures with local Ollama. Live host sessions and macOS/Linux execution still need verification.
 - Limited user/assistant/tool text API; no streaming, system messages, images, supplied tools or arbitrary generation options. Not a full Ollama/OpenAI protocol replacement.
 - PASS does not guarantee safety. Sanitized/reviewed content remains untrusted. Required detector failure holds content.
 - The optional ML baseline is binary. Suspicious is a policy band, and each detector configuration can produce false positives and misses.

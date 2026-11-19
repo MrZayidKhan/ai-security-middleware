@@ -3,11 +3,12 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
 from threading import BoundedSemaphore
+from typing import Literal
 from uuid import uuid4
 import json
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -39,8 +40,6 @@ class ChatRequest(BaseModel):
 
     @model_validator(mode='after')
     def bounded_request(self):
-        if self.stream:
-            raise ValueError('Streaming is not supported by this gateway.')
         if sum(len(message.content) for message in self.messages) > 40000:
             raise ValueError('Combined context exceeds 40000 characters.')
         if not any(message.role == 'user' for message in self.messages):
@@ -48,11 +47,46 @@ class ChatRequest(BaseModel):
         return self
 
 
-def create_app(inspector=None, client=None, audit=None, *, detector_label='rules+required-local-qwen') -> FastAPI:
+class OllamaChatRequest(ChatRequest):
+    stream: bool = True
+    think: Literal[False] | None = None
+    options: dict = Field(default_factory=dict, max_length=0)
+
+
+class OllamaGenerateRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    model: str
+    prompt: str = Field(default='', max_length=20000)
+    stream: bool = True
+    think: Literal[False] | None = None
+    system: Literal[''] = ''
+    suffix: Literal[''] = ''
+    template: Literal[''] = ''
+    options: dict | None = Field(default=None, max_length=0)
+
+
+class OllamaShowRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    model: str | None = None
+    name: str | None = None
+    system: Literal[''] = ''
+    template: Literal[''] = ''
+    verbose: bool = False
+    options: dict | None = Field(default=None, max_length=0)
+
+
+def ollama_response(result, stream):
+    if not stream or isinstance(result, Response):
+        return result
+    return Response(json.dumps(result) + '\n', media_type='application/x-ndjson')
+
+
+def create_app(inspector=None, client=None, audit=None, *, detector_label='rules+required-local-qwen',
+               ollama_cli=False, answer_model: str = 'qwen3.5:4b', demo_screening=False) -> FastAPI:
     app = FastAPI(title='Local prompt security middleware', version='0.1.0')
     scanner = inspector or ContentInspector(assessor=OllamaContentAssessor(),
                                           require_assessment_for_untrusted=True)
-    model_client = client or OllamaClient()
+    model_client = client or OllamaClient(model_name=answer_model)
     # HTTP caller controls every role: even claimed assistant history is untrusted.
     boundary = PromptSecurityMiddleware(scanner, inspect_roles=frozenset({'user', 'tool', 'assistant'}))
     capacity = BoundedSemaphore(1)
@@ -97,11 +131,13 @@ def create_app(inspector=None, client=None, audit=None, *, detector_label='rules
     @app.get('/health')
     def health():
         return {'service': 'prompt-security-middleware', 'status': 'running',
-                'detectors': detector_label, 'upstream_checked': False}
+                'detectors': detector_label, 'upstream_checked': False,
+                'answer_model': answer_model}
 
-    @app.post('/api/chat')
-    def chat(payload: ChatRequest):
-        if payload.model != 'qwen3.5:4b':
+    def handle_chat(payload: ChatRequest, *, screen_only=False):
+        if payload.stream and not ollama_cli:
+            raise HTTPException(422, 'Streaming is not supported by this gateway.')
+        if payload.model != answer_model:
             raise HTTPException(422, 'Model is not configured for this local gateway.')
         if not capacity.acquire(blocking=False):
             raise HTTPException(429, 'Middleware busy; retry later.')
@@ -118,6 +154,9 @@ def create_app(inspector=None, client=None, audit=None, *, detector_label='rules
                     'error': 'detector_unavailable' if unavailable else 'content_withheld',
                     'request_id': request_id, 'reason': screened.reason, 'model_called': False,
                     'content_decisions': decisions})
+            if screen_only:
+                return {'model_called': False, 'middleware': {
+                    'request_id': request_id, 'decision': 'RELEASED', 'content_decisions': decisions}}
             forwarded = screened.messages
             digest = sha256(json.dumps([m.model_dump() for m in forwarded], sort_keys=True).encode()).hexdigest()
             # Persist authorization before the upstream side effect; failure stops forwarding.
@@ -140,5 +179,50 @@ def create_app(inspector=None, client=None, audit=None, *, detector_label='rules
                                    'content_decisions': decisions, 'forwarded_sha256': digest}}
         finally:
             capacity.release()
+
+    if demo_screening:
+        @app.post('/api/demo/screen')
+        def demo_screen(payload: ChatRequest):
+            return handle_chat(payload, screen_only=True)
+
+    def chat(payload: ChatRequest):
+        return handle_chat(payload)
+
+    if not ollama_cli:
+        app.post('/api/chat')(chat)
+        return app
+
+    @app.api_route('/', methods=['GET', 'HEAD'])
+    def heartbeat():
+        return Response('Protected Ollama gateway is running', media_type='text/plain')
+
+    @app.get('/api/version')
+    def version():
+        return {'version': app.version}
+
+    @app.post('/api/show')
+    def show(payload: OllamaShowRequest):
+        if (payload.model or payload.name) != answer_model:
+            return JSONResponse(status_code=404, content={'error': 'Model is not configured.'})
+        return {'capabilities': ['completion']}
+
+    @app.post('/api/chat')
+    def cli_chat(payload: OllamaChatRequest):
+        return ollama_response(chat(payload), payload.stream)
+
+    @app.post('/api/generate')
+    def cli_generate(payload: OllamaGenerateRequest):
+        if payload.model != answer_model:
+            return JSONResponse(status_code=422, content={'error': 'Model is not configured.'})
+        if not payload.prompt:
+            # The interactive CLI sends an empty warm-up request. It has no inference input.
+            return ollama_response({'model': payload.model, 'response': '', 'done': True}, payload.stream)
+        result = chat(ChatRequest(model=payload.model, messages=[
+            InputMessage(role='user', content=payload.prompt),
+        ]))
+        if isinstance(result, Response):
+            return result
+        result['response'] = result.pop('message')['content']
+        return ollama_response(result, payload.stream)
 
     return app

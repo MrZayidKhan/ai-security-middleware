@@ -19,6 +19,7 @@ The project builds an installable security layer for AI agents. It evaluates unt
 | Google Antigravity | Workspace `PreInvocation` hook inspects the latest typed prompt and can stop the model call. The native hook contract does not provide tool result text. |
 | Python integration | `PromptSecurityMiddleware` and `SecureChatClient` screen model-bound text at a boundary the application controls. Callers can forward sanitized replacements. |
 | Local HTTP and demo application | Bounded text requests to Ollama, protected retrieval from approved documents, exact-excerpt review, local events, and a separate action gateway for the controlled demo tools. |
+| Rust analytics dashboard | Native read-only desktop viewer for inspection decisions and audit events from a shared local SQLite database. Can open existing logs without an active model, agent, or gateway. |
 
 The hook package includes a rules mode and defaults to the local Ollama/Qwen assessor. It needs no development dataset or trained artifact. The host agent retains its model and permission controls. The hook package, the English contextual verifier, and the local demo have different configuration and evidence. Results for one do not automatically apply to the others.
 
@@ -26,6 +27,11 @@ The hook package includes a rules mode and defaults to the local Ollama/Qwen ass
 
 - Coverage is opt-in and depends on the events the host runs. Attachments, internal context, and unhooked tool paths are outside coverage. Hook execution failures or timeouts can leave an input unscreened.
 - Universal agent compatibility, a browser extension, managed hosting, mobile installers, and operating-system sandboxing are outside the current release. Full tool authorization for third-party agents, comprehensive audit coverage, and automatic recovery of suspended agent sessions remain open.
-- The package targets Windows, macOS, and Linux where the agent can run compatible Python command hooks. The Windows wheel and rules-mode hook commands passed smoke tests, and 18 targeted tests passed from a clean snapshot. Live Codex and Antigravity sessions, Ollama-backed hooks, and macOS/Linux execution still need verification.
+- The package targets Windows, macOS, and Linux where the agent can run compatible Python command hooks. On Windows, the installed wheel generated working commands for all three supported hook events. Rules-mode fixtures exercised release and block, and Ollama-backed handler checks released benign fixtures for all three events. Live in-app hook trust, invocation, and enforcement in Codex and Antigravity, and macOS/Linux execution still need verification.
+
+The installed gateway supports an explicit audit database path. Agent hooks can
+write metadata-only decisions to the same database using their optional audit
+flag. See [standalone setup](STANDALONE_SETUP.md) for the Windows, macOS, and
+Linux dashboard build targets and how GitHub produces downloads.
 
 See the [agent setup guide](AGENT_HOOKS.md), [security model](SECURITY_MODEL.md), and [project tracker](PROJECT_TRACKER.md).
