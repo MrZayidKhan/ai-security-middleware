@@ -2,6 +2,10 @@
 
 A local Python connector that inspects model-bound text before forwarding it to Ollama. It provides PASS, SANITIZE or HOLD decisions, a local HTTP gateway, a Streamlit dashboard, excerpt review and SQLite security events.
 
+For an installable prompt guard for Codex and Google Antigravity, see the
+[cross-platform agent setup](docs/AGENT_HOOKS.md). The hooks use the agent's own
+answering model and can be installed independently of the dashboard and gateway.
+
 ## Start on Windows
 
 From the repository root, create an environment if needed and install dependencies:

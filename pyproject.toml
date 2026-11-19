@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=78"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-security-middleware"
+version = "0.1.0"
+description = "Prompt-injection screening hooks for AI coding agents"
+requires-python = ">=3.10"
+dependencies = ["pydantic>=2.12,<3"]
+
+[project.scripts]
+ai-security-middleware = "security_middleware.agent_hooks:main"
+
+[tool.setuptools.packages.find]
+include = ["security_middleware*"]
+namespaces = false

@@ -1,4 +1,7 @@
 .venv/
+build/
+dist/
+*.egg-info/
 .pip-bootstrap-temp/
 __pycache__/
 *.py[cod]
