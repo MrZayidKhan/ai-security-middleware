@@ -1,6 +1,9 @@
 # Project Tracker
 
-Current distribution checkpoint: a wheel built from a clean checkout, 18 targeted tests passed from a clean snapshot, and the installed hook commands passed a Windows rules-mode smoke test. Live Codex and Antigravity sessions and local-verifier hook execution remain pending. macOS/Linux distribution is deferred. See [scope and acceptance criteria](PROJECT_SCOPE.md). Earlier test counts are historical snapshots.
+The current Windows x64 package combines offline screening, workspace setup,
+audit dashboard, sanitation API, and uninstall. See the [offline evaluation](offline_detector_evaluation.json)
+for English detector metrics and the [roadmap](IMPLEMENTATION_ROADMAP.md) for
+the next phase, tool-call enforcement before execution.
 
 ## Historical checkpoints
 

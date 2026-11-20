@@ -33,7 +33,7 @@ extracted folder and replace the package version with the version shipped in
 
 ```powershell
 py -3.13 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --no-index --find-links .\wheels ai-security-middleware==0.1.0 onnxruntime tokenizers numpy
+.\.venv\Scripts\python.exe -m pip install --no-index --find-links .\wheels 'ai-security-middleware[gateway]==0.1.0' onnxruntime tokenizers numpy
 ```
 
 Keep the extracted folder in a stable location. Resolve the model folder and
@@ -74,7 +74,7 @@ license terms when distributing the bundle.
 
 ```powershell
 py -3.13 -m build --wheel --outdir .\dist\offline-build
-py -3.13 -m pip wheel --wheel-dir .\dist\offline-wheelhouse --only-binary=:all: .\dist\offline-build\ai_security_middleware-0.1.0-py3-none-any.whl 'onnxruntime==1.32.0' 'tokenizers==0.23.3' numpy
+py -3.13 -m pip wheel --wheel-dir .\dist\offline-wheelhouse --only-binary=:all: '.\dist\offline-build\ai_security_middleware-0.1.0-py3-none-any.whl[gateway]' 'onnxruntime==1.32.0' 'tokenizers==0.23.3' numpy
 py -3.13 .\packaging\package_offline_detector.py --model-dir .\models\pretrained\horizon-small --wheelhouse .\dist\offline-wheelhouse --dashboard .\rust-dashboard\target\release\security-dashboard.exe --output .\dist\offline-detector-windows-x64-py313.zip
 ```
 
