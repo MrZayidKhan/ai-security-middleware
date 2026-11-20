@@ -104,13 +104,18 @@ class ContentInspector:
         result = self._inspect(envelope)
         if result.decision is ContentDecision.SANITIZE:
             remainder = result.sanitized_content or ''
-            _, findings = self._normalize(remainder)
-            if (self._data_exfiltration.search(remainder)
+            remainder, findings = self._normalize(remainder)
+            validation_error = self._validate_content(remainder)
+            if (validation_error
+                    or self._data_exfiltration.search(remainder)
                     or self._override_instruction.search(remainder)
                     or any(item.severity == 'high' for item in findings)):
                 result.decision = ContentDecision.HOLD_FOR_REVIEW
                 result.sanitized_content = None
-                result.reason = 'Suspicious instructions remain after sanitization.'
+                result.reason = (f'After sanitization: {validation_error}' if validation_error
+                                 else 'Suspicious instructions remain after sanitization.')
+            else:
+                result.sanitized_content = remainder
         deterministic_hold = (result.decision is ContentDecision.HOLD_FOR_REVIEW
             and any(f.rule_id in {'data-exfiltration-directive', 'encoded-suspicious-payload'}
                     for f in result.findings))
