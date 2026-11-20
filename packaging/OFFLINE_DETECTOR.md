@@ -14,8 +14,9 @@ and enable the generated hooks in your agent. Run Setup again to connect
 another workspace. Keep the extracted files in place because the hooks refer
 to them.
 
-The launcher requires Windows CPython 3.13 with the Python launcher and a
-wheelhouse matching the machine architecture. For scripted setup, run
+The launcher requires the Windows CPython version listed in
+`python-version.txt`, the Python launcher, and a wheelhouse matching the
+machine architecture. For scripted setup, run
 `setup_detector.ps1 -Agent codex -Workspace 'C:\path\to\workspace'`.
 
 ### Manual installation

@@ -35,10 +35,12 @@ try {
     }
     $venv = Join-Path $PSScriptRoot '.venv'
     if (-not (Get-Command py.exe -ErrorAction SilentlyContinue)) {
-        throw 'This setup needs Windows Python 3.13 with the Python launcher.'
+        throw 'This setup needs matching Windows Python with the Python launcher.'
     }
-    & py.exe -3.13 -m venv $venv
-    if ($LASTEXITCODE -ne 0) { throw 'Could not create the Python 3.13 environment.' }
+    $runtime = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'python-version.txt') -Raw).Trim()
+    if ($runtime -notmatch '^3\.(13|14)$') { throw 'Invalid bundled Python version.' }
+    & py.exe "-$runtime" -m venv $venv
+    if ($LASTEXITCODE -ne 0) { throw "Could not create the Python $runtime environment." }
     $python = Join-Path $venv 'Scripts\python.exe'
     & $python -m pip --isolated install --disable-pip-version-check --no-index --find-links $wheels ai-security-middleware onnxruntime tokenizers numpy
     if ($LASTEXITCODE -ne 0) { throw 'Offline dependency installation failed. Check Python and CPU compatibility.' }

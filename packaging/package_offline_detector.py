@@ -14,7 +14,7 @@ MODEL_HASHES = {
 REQUIRED_FILES = (*MODEL_HASHES, 'config.json', 'advisory_profile.json', 'LICENSE', 'NOTICE', 'README.md')
 
 
-def package(model_dir: Path, wheelhouse: Path, output: Path) -> None:
+def package(model_dir: Path, wheelhouse: Path, output: Path, python_version: str = '3.13') -> None:
     model_files = [model_dir / name for name in REQUIRED_FILES]
     for file in model_files:
         if not file.is_file():
@@ -33,6 +33,7 @@ def package(model_dir: Path, wheelhouse: Path, output: Path) -> None:
         raise ValueError('Output must be a new .zip file')
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, 'x', compression=zipfile.ZIP_DEFLATED) as bundle:
+        bundle.writestr('python-version.txt', python_version)
         bundle.write(ROOT / 'packaging' / 'OFFLINE_DETECTOR.md', 'OFFLINE_DETECTOR.md')
         for name in ('Setup.cmd', 'setup_detector.ps1'):
             bundle.write(ROOT / 'packaging' / name, name)
@@ -47,9 +48,10 @@ def main() -> None:
     parser.add_argument('--model-dir', required=True, type=Path)
     parser.add_argument('--wheelhouse', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--python-version', choices=('3.13', '3.14'), default='3.13')
     args = parser.parse_args()
     try:
-        package(args.model_dir, args.wheelhouse, args.output)
+        package(args.model_dir, args.wheelhouse, args.output, args.python_version)
     except ValueError as error:
         parser.error(str(error))
     print(args.output)
