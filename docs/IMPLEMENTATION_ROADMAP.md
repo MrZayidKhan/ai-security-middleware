@@ -2,7 +2,11 @@
 
 ## Current position
 
-The reusable inspector, local HTTP and demo application, and installable Codex and Antigravity hooks are implemented at the scope described in [Project Objectives and Scope](PROJECT_SCOPE.md). The wheel build and Windows rules-mode hook smoke test are complete. The next distribution milestone is live-agent acceptance testing and repeatable Windows installs. macOS and Linux packaging are deferred.
+The Windows x64 bundle contains the offline detector, workspace setup,
+dashboard, sanitation service, and uninstaller. English screening remains
+experimental. The next phase is tool-call policy: enforce supported action
+checks before execution and verify coverage in live integrations. macOS and
+Linux packaging are deferred.
 
 ## Delivery sequence
 

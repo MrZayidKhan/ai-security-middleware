@@ -10,8 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL_HASHES = {
     'model_quantized.onnx': '61cd0741cdbfcc229e32e1de1392f352736d87d1e8b3c2b67ad9836bb7910d5d',
     'tokenizer.json': '47834a7dbbb0c4324fe9569fe47955241594a9ee539c9e478755d6fbc51e5f46',
+    'NOTICE': '5ffe2383027c7510933df2e7055440edde8c96b67b7a58fb477f9632c72b9c14',
 }
-REQUIRED_FILES = (*MODEL_HASHES, 'config.json', 'advisory_profile.json', 'LICENSE', 'NOTICE', 'README.md')
+REQUIRED_FILES = (*MODEL_HASHES, 'config.json', 'advisory_profile.json', 'LICENSE', 'README.md')
 
 
 def package(model_dir: Path, wheelhouse: Path, output: Path, python_version: str = '3.13',
@@ -38,7 +39,8 @@ def package(model_dir: Path, wheelhouse: Path, output: Path, python_version: str
     with zipfile.ZipFile(output, 'x', compression=zipfile.ZIP_DEFLATED) as bundle:
         bundle.writestr('python-version.txt', python_version)
         bundle.write(ROOT / 'packaging' / 'OFFLINE_DETECTOR.md', 'OFFLINE_DETECTOR.md')
-        for name in ('Setup.cmd', 'setup_detector.ps1', 'Open Dashboard.cmd'):
+        for name in ('Setup.cmd', 'setup_detector.ps1', 'Open Dashboard.cmd',
+                     'Open Sanitizer.cmd', 'Uninstall.cmd', 'uninstall_detector.py'):
             bundle.write(ROOT / 'packaging' / name, name)
         bundle.write(dashboard, 'security-dashboard.exe')
         for file in model_files:

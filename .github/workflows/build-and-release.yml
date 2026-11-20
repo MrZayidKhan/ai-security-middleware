@@ -122,7 +122,7 @@ jobs:
   release:
     name: Publish versioned downloads
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: [python-tests, wheel, dashboard]
+    needs: [python-tests, wheel, dashboard, offline-setup]
     runs-on: windows-2022
     timeout-minutes: 10
     permissions:
@@ -148,3 +148,60 @@ jobs:
           $hashes | Set-Content SHA256SUMS.txt
           $releaseFiles = @($files.FullName) + @((Resolve-Path DOWNLOADS.md).Path, (Resolve-Path SHA256SUMS.txt).Path)
           gh release create $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --verify-tag --generate-notes -- $releaseFiles
+
+  offline-setup:
+    name: Verified Windows x64 all-in-one setup
+    needs: [python-tests, dashboard]
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - uses: actions/download-artifact@v8
+        with:
+          name: distribution-dashboard-windows-x64
+          path: dashboard-artifact
+      - name: Stage detector and dependencies
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Expand-Archive dashboard-artifact/security-dashboard-windows-x64.zip staged-dashboard
+          New-Item -ItemType Directory staged-model | Out-Null
+          $origin = 'https://huggingface.co/Horizon-Labs/prompt-injection-guard-small/resolve'
+          $revision = '2efc2ed5abecd21eb45c2506d231a65d6e392b85'
+          foreach ($file in 'tokenizer.json', 'config.json', 'LICENSE', 'README.md') {
+            Invoke-WebRequest "$origin/$revision/$file" -OutFile "staged-model/$file"
+          }
+          Invoke-WebRequest "$origin/$revision/onnx/model_quantized.onnx" -OutFile staged-model/model_quantized.onnx
+          Invoke-WebRequest "$origin/main/NOTICE" -OutFile staged-model/NOTICE
+          Copy-Item packaging/horizon_advisory_profile.json staged-model/advisory_profile.json
+          python -m pip wheel --only-binary=:all: --wheel-dir staged-wheels '.[gateway]' 'onnxruntime==1.32.0' 'tokenizers==0.23.3' 'numpy==2.5.4'
+      - name: Package and smoke-test offline setup
+        run: |
+          python packaging/package_offline_detector.py --model-dir staged-model --wheelhouse staged-wheels --dashboard staged-dashboard/security-dashboard-windows-x64/security-dashboard.exe --output all-in-one/Prompt-Security-All-in-One-Windows-x64.zip --python-version 3.14
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m zipfile -e all-in-one/Prompt-Security-All-in-One-Windows-x64.zip extracted-setup
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File extracted-setup/setup_detector.ps1 -Agent codex -Workspace (New-Item -ItemType Directory setup-test-workspace).FullName
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path setup-test-workspace/.codex/hooks.json) -or -not (Test-Path extracted-setup/runtime_data/security_events.db)) {
+            throw 'Setup did not create the hook and audit database.'
+          }
+          'UNINSTALL' | python extracted-setup/uninstall_detector.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $hooksFile = 'setup-test-workspace/.codex/hooks.json'
+          if ((Test-Path $hooksFile) -and ((Get-Content $hooksFile -Raw) -match 'security_middleware.agent_hooks')) {
+            throw 'Uninstall left the installed hook enabled.'
+          }
+          if ((Test-Path extracted-setup/model/model_quantized.onnx) -or -not (Test-Path extracted-setup/runtime_data/security_events.db)) {
+            throw 'Uninstall did not remove the model and preserve the audit database.'
+          }
+      - uses: actions/upload-artifact@v7
+        with:
+          name: distribution-all-in-one-windows-x64
+          path: all-in-one/Prompt-Security-All-in-One-Windows-x64.zip
+          compression-level: 0
+          if-no-files-found: error

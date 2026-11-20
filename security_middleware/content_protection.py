@@ -73,6 +73,7 @@ class ContentInspectionResult(BaseModel):
 class ContentInspector:
     """Combine validation, structural checks, rules, and a local-model signal."""
 
+    _redaction_marker = "[Suspicious instruction removed.]"
     _override_instruction = re.compile(
         r"(?im)^.*\b(?:ignore|disregard|override)\s+(?:all\s+)?"
         r"(?:previous|prior|system|earlier)\s+(?:instructions|rules|messages).*?$"
@@ -90,6 +91,7 @@ class ContentInspector:
         assessor: ContentAssessor | None = None,
         require_assessment_for_untrusted: bool = False,
         detector: Detector | None = None,
+        classify_sanitized_text: bool = False,
     ) -> None:
         self._max_content_characters = max_content_characters
         if max_content_characters < 1:
@@ -97,6 +99,9 @@ class ContentInspector:
         self._assessor = assessor
         self._require_assessment_for_untrusted = require_assessment_for_untrusted
         self._detector = detector
+        if classify_sanitized_text and (detector is None or assessor is not None):
+            raise ValueError("Rule-based sanitization requires a classifier and no assessor.")
+        self._classify_sanitized_text = classify_sanitized_text
 
     def inspect(self, envelope: ContentEnvelope) -> ContentInspectionResult:
         """Aggregate advisory evidence without converting probability into spans."""
@@ -120,7 +125,9 @@ class ContentInspector:
             and any(f.rule_id in {'data-exfiltration-directive', 'encoded-suspicious-payload'}
                     for f in result.findings))
         if self._detector and result.normalized_content is not None and not deterministic_hold:
-            output = self._detect(result.normalized_content,envelope.trusted_task,envelope.input_channel)
+            use_remainder = self._classify_sanitized_text and result.decision is ContentDecision.SANITIZE
+            candidate = result.sanitized_content if use_remainder else result.normalized_content
+            output = self._detect(candidate or '', envelope.trusted_task, envelope.input_channel)
             result.detector_outputs.append(output)
             uncertainty_resolved = (
                 output.risk == 'suspicious'
@@ -135,7 +142,11 @@ class ContentInspector:
                 result.decision = ContentDecision.HOLD_FOR_REVIEW
                 result.sanitized_content = None
                 result.reason = (prior_reason + f' Classifier requires review: {output.risk}. {output.reason}').strip()
-            elif result.decision is ContentDecision.SANITIZE:
+            elif use_remainder and not (candidate or '').replace(self._redaction_marker, '').strip():
+                result.decision = ContentDecision.HOLD_FOR_REVIEW
+                result.sanitized_content = None
+                result.reason = 'No usable content remains after sanitization.'
+            elif result.decision is ContentDecision.SANITIZE and not use_remainder:
                 # A document-level benign prediction cannot certify the remainder.
                 residual = self._detect(result.sanitized_content or '',envelope.trusted_task,envelope.input_channel)
                 result.detector_outputs.append(residual)
@@ -224,7 +235,7 @@ class ContentInspector:
         override_matches = list(self._override_instruction.finditer(normalized_content))
         if override_matches:
             sanitized_content = self._override_instruction.sub(
-                "[Suspicious instruction removed.]", normalized_content
+                self._redaction_marker, normalized_content
             )
             if assessment and assessment.risk == "suspicious":
                 model_cleaned = self._sanitize_model_spans(
@@ -239,7 +250,7 @@ class ContentInspector:
                         findings=normalization_findings,
                     )
                 sanitized_content = self._override_instruction.sub(
-                    "[Suspicious instruction removed.]", model_cleaned
+                    self._redaction_marker, model_cleaned
                 )
             return ContentInspectionResult(
                 decision=ContentDecision.SANITIZE,

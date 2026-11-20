@@ -15,12 +15,20 @@ def main(*, default_db: Path | None = None) -> None:
     parser.add_argument("--port", type=int, default=8787)
     parser.add_argument("--audit-db", type=Path, default=default_db or default_audit_db(),
                         help="SQLite file for security events.")
-    parser.add_argument("--detector", choices=("existing", "english-verifier"), default="existing",
-                        help="Select the English contextual verifier or the original local Qwen assessor.")
+    parser.add_argument("--detector", choices=("existing", "english-verifier", "offline"), default="existing",
+                        help="Select a verifier or run the offline sanitation API.")
+    parser.add_argument("--model-dir", type=Path, help="Bundled Horizon model directory for offline mode.")
     parser.add_argument("--ollama-cli", action="store_true", help="Enable text-only Ollama CLI compatibility.")
     parser.add_argument("--demo", action="store_true",
                         help="Use the English verifier and short replies from qwen3.5:0.8b.")
     args = parser.parse_args()
+    if args.detector == "offline":
+        if args.model_dir is None or not args.model_dir.is_dir():
+            parser.error("--detector offline requires an existing --model-dir")
+        if args.demo or args.ollama_cli:
+            parser.error("offline mode provides /api/sanitize and cannot use --demo or --ollama-cli")
+    elif args.model_dir is not None:
+        parser.error("--model-dir is only valid with --detector offline")
     try:
         import uvicorn
         from .api import create_app
@@ -37,7 +45,20 @@ def main(*, default_db: Path | None = None) -> None:
     db = args.audit_db.expanduser().resolve()
     initialize_audit_database(db)
     audit = AuditLog(db)
-    if args.detector == "english-verifier" or args.demo:
+    if args.detector == "offline":
+        from .horizon_detector import HorizonDetector
+
+        try:
+            detector = HorizonDetector.from_advisory_profile(args.model_dir)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            parser.error(f"Could not load the offline detector profile: {error}")
+        app = create_app(
+            inspector=ContentInspector(detector=detector, classify_sanitized_text=True),
+            audit=audit,
+            detector_label="rules+horizon-small-offline",
+            sanitize_only=True,
+        )
+    elif args.detector == "english-verifier" or args.demo:
         model = "qwen3.5:0.8b" if args.demo else "qwen3.5:4b"
         client = None
         if args.demo:
