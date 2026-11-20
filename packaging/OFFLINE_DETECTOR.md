@@ -6,6 +6,21 @@ locally. The connected agent still uses its usual answering model.
 
 ## Install from an extracted bundle
 
+Extract the entire ZIP to a permanent folder and double-click **Setup.cmd**.
+Choose **Codex** or **Antigravity** and enter the existing workspace folder.
+Setup installs dependencies from the ZIP, checks that the classifier runs,
+and writes the agent's workspace hook configuration. Reopen the workspace
+and enable the generated hooks in your agent. Run Setup again to connect
+another workspace. Keep the extracted files in place because the hooks refer
+to them.
+
+The launcher requires the Windows CPython version listed in
+`python-version.txt`, the Python launcher, and a wheelhouse matching the
+machine architecture. For scripted setup, run
+`setup_detector.ps1 -Agent codex -Workspace 'C:\path\to\workspace'`.
+
+### Manual installation
+
 Use the Python version and processor architecture used to build the wheelhouse.
 The example targets 64-bit Windows with CPython 3.13. Open PowerShell in the
 extracted folder and replace the package version with the version shipped in
