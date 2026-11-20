@@ -11,7 +11,7 @@ MODEL_HASHES = {
     'model_quantized.onnx': '61cd0741cdbfcc229e32e1de1392f352736d87d1e8b3c2b67ad9836bb7910d5d',
     'tokenizer.json': '47834a7dbbb0c4324fe9569fe47955241594a9ee539c9e478755d6fbc51e5f46',
 }
-REQUIRED_FILES = (*MODEL_HASHES, 'config.json', 'LICENSE', 'NOTICE', 'README.md')
+REQUIRED_FILES = (*MODEL_HASHES, 'config.json', 'advisory_profile.json', 'LICENSE', 'NOTICE', 'README.md')
 
 
 def package(model_dir: Path, wheelhouse: Path, output: Path) -> None:
@@ -34,6 +34,8 @@ def package(model_dir: Path, wheelhouse: Path, output: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, 'x', compression=zipfile.ZIP_DEFLATED) as bundle:
         bundle.write(ROOT / 'packaging' / 'OFFLINE_DETECTOR.md', 'OFFLINE_DETECTOR.md')
+        for name in ('Setup.cmd', 'setup_detector.ps1'):
+            bundle.write(ROOT / 'packaging' / name, name)
         for file in model_files:
             bundle.write(file, f'model/{file.name}')
         for file in wheels:
