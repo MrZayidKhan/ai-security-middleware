@@ -138,3 +138,27 @@ entries. Tool-action authorization is separate; this HTTP endpoint executes no t
 Stop either service with Ctrl+C. No browser-origin/CORS integration is enabled
 or needed for a backend application caller. See `docs/MIDDLEWARE_USAGE.md` for
 limits and error details.
+
+## Using the native Ollama terminal
+
+Keep Ollama running on its usual local port, `11434`. Restart the middleware
+with CLI compatibility enabled. From Command Prompt at the repository root:
+
+```cmd
+.venv\Scripts\python.exe -m scripts.run_middleware --detector english-verifier --ollama-cli
+```
+
+Exit any existing Qwen prompt with `/bye`. In a second Command Prompt, start a
+protected session:
+
+```cmd
+set "OLLAMA_HOST=http://127.0.0.1:8787"
+ollama run qwen3.5:4b
+```
+
+Type normally at `>>>`. The CLI sends conversation history with each message,
+and the gateway screens it before forwarding. Replies appear once complete.
+When a message is withheld, the CLI reports `content_withheld` and exits.
+Rerun `ollama run qwen3.5:4b` in the same terminal for a fresh conversation.
+The host setting applies only to that terminal. Keep it set for protected
+sessions. The audit dashboard continues to show screening and forwarding events.

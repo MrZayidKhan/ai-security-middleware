@@ -9,8 +9,12 @@ description = "Prompt-injection screening hooks for AI coding agents"
 requires-python = ">=3.10"
 dependencies = ["pydantic>=2.12,<3"]
 
+[project.optional-dependencies]
+gateway = ["fastapi>=0.128,<0.137", "uvicorn>=0.35,<1"]
+
 [project.scripts]
 ai-security-middleware = "security_middleware.agent_hooks:main"
+ai-security-middleware-serve = "security_middleware.server:main"
 
 [tool.setuptools.packages.find]
 include = ["security_middleware*"]

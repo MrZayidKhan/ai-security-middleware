@@ -1,106 +1,180 @@
-# AI Agent Security Middleware
+# Prompt Security Middleware
 
-AI Agent Security Middleware screens untrusted text before it reaches an AI agent's answering model. Install it as a Python package from a Git clone or wheel for supported Codex and Google Antigravity workspaces. You can also integrate the inspector into your own Python agent or use the local Ollama HTTP gateway.
+**Status: experimental — English and Windows are the current supported focus.**
 
-For an installable prompt guard for Codex and Google Antigravity, see the
-[cross-platform agent setup](docs/AGENT_HOOKS.md). The hooks use the agent's own
-answering model and can be installed independently of the dashboard and gateway.
+This project places a security boundary between an agent application and the
+model or tools that the agent uses. It inspects untrusted prompts, retrieved
+text, and proposed tool calls before they are forwarded. The middleware can
+allow safe content, sanitize a removable suspicious span, or hold content for
+review.
 
-## Objectives
+The current implementation is a working research prototype. It is useful for
+local demonstrations and controlled testing, but it is not yet a complete
+security product. Detection quality, coverage, and performance must continue
+to be measured on independent data before production use.
 
-- Make prompt-injection screening installable on another machine without copying development paths, local datasets, or model artifacts.
-- Screen user prompts and retrieved text at the model boundary where the integration exposes them. Pass benign text, sanitize when the interface can forward replacement text, and withhold unresolved content.
-- Keep tool permissions independent of classifier decisions. Demonstrate bounded tool execution, excerpt review, and security events in the local application.
-- Measure enforcement and detector effectiveness separately. Document coverage, false positives, misses, and runtime limitations.
+## Current phase
 
-See [project scope and acceptance criteria](docs/PROJECT_SCOPE.md) for what ships today and what still needs verification.
+The near-term target is a fast, dependable English/Windows path:
 
-## Install for Codex or Antigravity
+- Windows installation and launch instructions are the primary supported path.
+- English direct and indirect prompt-injection cases are the primary evaluation
+  set.
+- Deterministic rules and structural validation run before any model-assisted
+  assessment.
+- Suspicious text can be withheld or replaced with a marked sanitized value.
+- Tool and action permissions remain separate from text classification.
+- The Rust dashboard is the primary local event viewer.
 
-From the clone, use Python 3.10 or newer and run `python -m pip install .` in a virtual environment. From the workspace to protect, run `ai-security-middleware install codex` or `ai-security-middleware install antigravity`. The default classifier uses local Ollama with `qwen3.5:4b`. Use `--detector rules` for a smoke test without Ollama. Follow the [agent setup guide](docs/AGENT_HOOKS.md) to enable the generated hooks.
+Other languages, additional operating systems, broad protocol compatibility,
+and production deployment controls are planned but not claimed as complete.
 
-## Run the local Ollama demo on Windows
+## How it works
 
-From the repository root, create an environment if needed and install dependencies:
+```text
+Agent request
+    -> validation and normalization
+    -> rules and encoding checks
+    -> optional local risk assessment
+    -> sanitation or hold decision
+    -> tool/action policy checks
+    -> release to the configured model or agent
+    -> SQLite audit event and receipt
+```
+
+The detector is not allowed to execute the text it evaluates. A detector result
+does not grant tool access. Tool calls must pass their own schema, allowlist,
+argument, path, network, and confirmation checks.
+
+When a local verifier is enabled, the middleware connects to the locally
+configured inference service. The verifier is an advisory signal inside the
+policy engine; deterministic holds and detector failures remain fail-closed.
+The answering model is not bundled in this repository, and its responses are
+not cached by the middleware.
+
+## Connections
+
+The middleware is designed around adapters rather than one particular agent.
+The current repository provides:
+
+- a bounded HTTP gateway for applications that can send requests to a local
+  endpoint;
+- Python interfaces for embedding inspection in a custom agent;
+- generated Codex and Antigravity hook handlers for the inputs those hosts
+  expose;
+- a separate action gateway for the small set of controlled operations covered
+  by the prototype.
+
+For another CLI or desktop application, choose an adapter based on the
+interface it exposes:
+
+1. Use an HTTP adapter when the application can target a configurable local
+   endpoint.
+2. Use a hook adapter when it exposes pre-prompt or pre-tool hooks.
+3. Use the Python interface when the application is Python-based.
+4. Add a new adapter when none of those interfaces are available.
+
+The official desktop application for a model provider is not automatically
+intercepted. It must be configured to use the gateway or an available hook.
+
+## Windows quick start
+
+Use Python 3.10 or newer. From a PowerShell window in the repository:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements-test.txt
+.\.venv\Scripts\python.exe -m pip install .
 ```
 
-Keep Ollama running with `qwen3.5:4b` installed. Start the middleware:
+Start the gateway in deterministic rules mode first:
 
 ```powershell
-.\.venv\Scripts\python.exe -m scripts.run_middleware
+.\.venv\Scripts\python.exe -m scripts.run_middleware --detector rules
 ```
 
-Send supported agent requests to `http://127.0.0.1:8787/api/chat` instead of Ollama directly. Open `http://127.0.0.1:8787/docs` for interactive API documentation.
+The HTTP endpoint is `http://127.0.0.1:8787`. Interactive API documentation is
+available at `http://127.0.0.1:8787/docs`.
 
-For the separately tested English contextual verifier, start with
-`.\.venv\Scripts\python.exe -m scripts.run_middleware --detector english-verifier`.
-Use the [application connection guide](docs/APPLICATION_CONNECTION_ENGLISH.md)
-and [English test results](docs/ENGLISH_VERIFIER_READINESS.md). The supplied
-`MiddlewareChatClient` handles the gateway's limited protocol without bypass fallback.
-The dashboard is optional for viewing logs; the HTTP service performs inspection.
+The optional local verifier is installed and configured separately. It is not
+part of the wheel and its model files are not committed to this repository.
+See [the standalone setup guide](docs/STANDALONE_SETUP.md) and
+[the agent hook guide](docs/AGENT_HOOKS.md) for the supported configuration.
 
-In another terminal, start the dashboard:
+## Dashboard
+
+The Rust dashboard is a read-only local viewer for the SQLite audit database.
+It can run without Python, a browser, or a running gateway:
 
 ```powershell
-.\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --browser.gatherUsageStats false
+.\rust-dashboard\target\release\security-dashboard.exe --summary
 ```
 
-Open the local URL printed by Streamlit. Stop either service with Ctrl+C.
+Open the executable without `--summary` for the desktop view. The dashboard
+reads the path passed with `--db`, then the
+`AI_SECURITY_MIDDLEWARE_AUDIT_DB` environment variable, then the local runtime
+database locations described in [standalone setup](docs/STANDALONE_SETUP.md).
+
+The cards show recorded events and inspection outcomes; they are not a claim
+that every withheld event is a confirmed attack.
 
 ## Current functionality
 
-| Component | Implemented behavior |
+| Area | Current behavior |
 |---|---|
-| Codex hooks | Block typed prompts and replace withheld results on supported tool paths |
-| Antigravity hook | Stop a model invocation based on the latest typed prompt |
-| HTTP middleware | Bounded non-streaming text gateway; fixed local model; all supplied roles inspected |
-| Python adapter | `PromptSecurityMiddleware` and `SecureChatClient` screen context before model calls |
-| Inspection | Validation, normalization, encoding checks, rules, optional ML/Qwen evidence |
-| Dashboard | Text analysis, protected model tests, retrieval, review queue, security events |
-| Human review | Exact-excerpt approval, provenance/sensitivity preservation, explicit rechecked continuation |
-| Controlled tools | Independent gateway for fixed document/SQLite/draft-only operations |
-| Evaluation | Reproducible research experiments; candidates do not automatically replace deployed models |
+| Inspection | Validation, normalization, encoding checks, rules, and optional local risk evidence |
+| Sanitation | Removes a supported suspicious excerpt or withholds unresolved content |
+| Tool safety | Separate schemas, allowlists, argument checks, and bounded operations |
+| Agent hooks | Codex and Antigravity paths covered where their host interfaces expose the required event |
+| HTTP gateway | Bounded non-streaming text requests with receipts and audit events |
+| Audit | Local SQLite records for inspections, decisions, and forwarding outcomes |
+| Dashboard | Native Rust viewer with filters, event details, and summary mode |
+| Evaluation | Reproducible tests and reports; no detector is accepted solely from a published score |
 
-```text
-Agent request → validation/inspection → hold OR released/sanitized context → local model
-                                     → receipt and security event
-```
+## Testing
 
-The HTTP service uses rules plus required local Qwen assessment. Clear deterministic holds skip model inference. Successful Qwen assessments are cached per instance for up to 60 seconds and 128 entries; failures are never cached. Answering-model responses are not cached. New-content Qwen CPU inference can remain slow.
-
-## Verify and test
+Run the local test suite from PowerShell:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q --basetemp .pytest-tmp
+cargo test --locked --manifest-path rust-dashboard/Cargo.toml
 ```
 
-Use the [HTTP integration guide](docs/MIDDLEWARE_USAGE.md) for request examples, limits and error responses, and the [manual test guide](docs/MANUAL_TESTING.md) for benign, injected, sanitized and reviewed-excerpt cases. Recording-client tests prove held content makes no answering-model call; detection effectiveness needs separate evaluation.
+Use [manual testing](docs/MANUAL_TESTING.md) for benign, direct-injection,
+indirect-injection, sanitation, and review cases. Report accuracy, precision,
+recall, F1, false-positive rate, false-negative rate, and latency on a held-out
+set. Do not tune thresholds on the final test set.
 
-## Scope and limits
+## What remains to be done
 
-- Workspace installation is opt-in. Hook coverage is limited to the inputs each agent exposes. Antigravity's native hook cannot screen tool results. Attachments and unhooked context are outside coverage.
-- The hook package targets Windows, macOS, and Linux. The wheel and generated commands were smoke-tested in rules mode on Windows. Live agent sessions, Ollama-backed hook execution, and macOS/Linux runs still need verification.
-- Limited user/assistant/tool text API; no streaming, system messages, images, supplied tools or arbitrary generation options. Not a full Ollama/OpenAI protocol replacement.
-- PASS does not guarantee safety. Sanitized/reviewed content remains untrusted. Required detector failure holds content.
-- The optional ML baseline is binary. Suspicious is a policy band, and each detector configuration can produce false positives and misses.
-- Full model-controlled-tool integration, authentication, remote deployment, signed audits and suspended-agent recovery remain pending.
-
-## Repository
-
-- `security_middleware/`: inspection, adapters, API, review, retrieval and tool controls.
-- `app.py`: local dashboard.
-- `scripts/`: launchers, review commands, demos and research scripts.
-- `tests/`: enforcement/regression tests; `sample_data/`: synthetic documents.
-- `data/`, `models/`, `runtime_data/`: ignored local datasets, artifacts and runtime data. Keep credentials, personal information and weights out of public commits.
+- Replace the current experimental risk signal with a separately evaluated,
+  compact prompt-injection classifier.
+- Add a dedicated action-risk policy dataset and test tool calls independently
+  from prompt text.
+- Improve sanitation for more content formats while preserving provenance.
+- Add a guided setup screen for choosing an agent type, endpoint, and audit
+  database.
+- Expand adapter coverage for additional CLI and desktop applications.
+- Verify macOS and Linux packaging after the Windows path is stable.
+- Add authentication, signed audits, deployment guidance, and recovery for
+  interrupted agent sessions.
+- Re-run independent English evaluation after every detector or policy change.
 
 ## Documentation
 
-- [Setup](docs/SETUP_AND_INSTALLATION.md) · [Development](docs/DEVELOPMENT.md)
-- [Agent hooks](docs/AGENT_HOOKS.md) · [Project scope](docs/PROJECT_SCOPE.md)
-- [Architecture](docs/ARCHITECTURE.md) · [Security model](docs/SECURITY_MODEL.md)
-- [Tracker](docs/PROJECT_TRACKER.md) · [Testing](docs/TESTING.md)
-- [ML training](docs/ML_TRAINING.md) · [Implementation review](docs/IMPLEMENTATION_REVIEW.md)
+- [Standalone setup](docs/STANDALONE_SETUP.md)
+- [Agent hooks](docs/AGENT_HOOKS.md)
+- [Application connection guide](docs/APPLICATION_CONNECTION_ENGLISH.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Security model](docs/SECURITY_MODEL.md)
+- [Manual testing](docs/MANUAL_TESTING.md)
+- [Evaluation report](docs/PROMPT_INJECTION_EVALUATION.md)
+- [Project scope](docs/PROJECT_SCOPE.md)
+
+## Contribution and branch policy
+
+Changes are made on a new branch, tested, and pushed for review. The main
+branch is updated only after the change has been reviewed and explicitly
+approved for merging.
+
+Keep local datasets, credentials, model weights, and runtime databases out of
+commits. See [development](docs/DEVELOPMENT.md) for the repository workflow.

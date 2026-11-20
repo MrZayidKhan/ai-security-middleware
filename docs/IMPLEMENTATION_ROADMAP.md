@@ -2,7 +2,7 @@
 
 ## Current position
 
-The reusable inspector, local HTTP and demo application, and installable Codex and Antigravity hooks are implemented at the scope described in [Project Objectives and Scope](PROJECT_SCOPE.md). The wheel build and Windows rules-mode hook smoke test are complete. The next distribution milestone is live-agent acceptance testing with the default classifier and repeatable installs on macOS and Linux.
+The reusable inspector, local HTTP and demo application, and installable Codex and Antigravity hooks are implemented at the scope described in [Project Objectives and Scope](PROJECT_SCOPE.md). The wheel build and Windows rules-mode hook smoke test are complete. The next distribution milestone is live-agent acceptance testing and repeatable Windows installs. macOS and Linux packaging are deferred.
 
 ## Delivery sequence
 
@@ -18,7 +18,7 @@ The reusable inspector, local HTTP and demo application, and installable Codex a
 | 8 | Evaluation corpus and comparison | Milestone 6 | Reproducible measurements for baseline, sanitization-only, and full middleware |
 | 9 | Optional benchmark subset | Milestone 8 | Scope, method, and results are documented |
 | 10 | Final verification and demonstration | Milestone 8 | Fresh setup and repeatable demonstration succeed |
-| 11 | Installable agent guard and live validation | Reusable inspector and host hooks | Windows, macOS, and Linux installs, live prompt blocking in both agents, and supported Codex tool-result withholding |
+| 11 | Installable agent guard and live validation | Reusable inspector and host hooks | Windows install, live prompt blocking in both agents, and supported Codex tool-result withholding |
 
 ## How a feature is added
 

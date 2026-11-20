@@ -14,10 +14,34 @@ from tempfile import NamedTemporaryFile
 HOOK_DIRECTORY = {"codex": ".codex", "antigravity": ".agents"}
 HOOK_GROUP = "ai-security-middleware"
 MAX_PAYLOAD_BYTES = 1_048_576
+OLLAMA_REQUEST_TIMEOUT_SECONDS = 90
+OLLAMA_HOOK_TIMEOUT_SECONDS = 110
 
 
-def screen(event: str, detector: str) -> dict:
+def record_inspection(audit_db: Path, event: str, detector: str, released: bool, reason: str) -> None:
+    try:
+        from security_middleware.audit_log import AuditLog, initialize_audit_database
+
+        initialize_audit_database(audit_db)
+        AuditLog(audit_db).record(
+            "hook_inspection",
+            reason,
+            {
+                "agent": "antigravity" if event == "antigravity-prompt" else "codex",
+                "origin": "tool_result" if event == "codex-result" else "user_prompt",
+                "hook_event": event,
+                "detector": detector,
+            },
+            decision="RELEASED" if released else "BLOCKED",
+        )
+    except Exception:
+        # Audit availability must not change the enforcement decision or hook output.
+        pass
+
+
+def screen(event: str, detector: str, audit_db: Path | None = None) -> dict:
     reason = "Prompt security inspection unavailable."
+    released = False
     try:
         # Keep imports inside the handler so dependency errors also produce a block.
         from security_middleware.content_assessor import ModelAssessment, OllamaContentAssessor
@@ -34,6 +58,8 @@ def screen(event: str, detector: str) -> dict:
         if is_tool_result:
             content = payload["tool_response"]
             if content is None or content == "":
+                released = True
+                reason = "Empty tool result required no screening."
                 return {}
             if not isinstance(content, str):
                 content = json.dumps(content, ensure_ascii=False, indent=2)
@@ -46,7 +72,9 @@ def screen(event: str, detector: str) -> dict:
 
         assessor = None
         if detector == "ollama":
-            client = OllamaClient(timeout_seconds=30, response_format=ModelAssessment.model_json_schema())
+            # Leave time for a cold model load while still returning a decision before the host deadline.
+            client = OllamaClient(timeout_seconds=OLLAMA_REQUEST_TIMEOUT_SECONDS,
+                                  response_format=ModelAssessment.model_json_schema())
             assessor = OllamaContentAssessor(client)
         middleware = PromptSecurityMiddleware(
             ContentInspector(assessor=assessor, require_assessment_for_untrusted=detector == "ollama")
@@ -55,6 +83,8 @@ def screen(event: str, detector: str) -> dict:
         result = middleware.before_model([ChatMessage(role=role, content=content)])
         decision = result.content_decisions[0]
         if decision is ContentDecision.PASS:
+            released = True
+            reason = "Prompt security inspection passed."
             return {}
         if decision is ContentDecision.SANITIZE:
             reason = "Prompt security withheld text that requires sanitization."
@@ -63,6 +93,9 @@ def screen(event: str, detector: str) -> dict:
     except Exception:
         # Payloads and classifier reasons may contain the text being withheld.
         pass
+    finally:
+        if audit_db is not None:
+            record_inspection(audit_db, event, detector, released, reason)
 
     if event == "antigravity-prompt":
         return {
@@ -72,20 +105,38 @@ def screen(event: str, detector: str) -> dict:
     return {"decision": "block", "reason": reason}
 
 
-def command_for(event: str, detector: str, shell: str) -> dict:
+def command_for(event: str, detector: str, shell: str, audit_db: Path | None = None) -> dict:
     executable = str(Path(sys.executable).absolute())
     args = ["-m", "security_middleware.agent_hooks", "hook", event, "--detector", detector]
     if shell == "powershell":
         command = "& '" + executable.replace("'", "''") + "' " + " ".join(args)
+        if audit_db is not None:
+            command += " --audit-db '" + str(audit_db).replace("'", "''") + "'"
+    elif shell == "cmd":
+        paths = [executable, str(audit_db)] if audit_db is not None else [executable]
+        if any(set(path).intersection('%!"\r\n') for path in paths):
+            raise ValueError("CMD hook paths cannot contain %, !, quotes, or newlines.")
+        command = f'"{executable}" ' + " ".join(args)
+        if audit_db is not None:
+            command += f' --audit-db "{audit_db}"'
     else:
+        if audit_db is not None:
+            args.extend(["--audit-db", str(audit_db)])
         command = shlex.join([executable, *args])
-    return {"type": "command", "command": command, "timeout": 45}
+    timeout = OLLAMA_HOOK_TIMEOUT_SECONDS if detector == "ollama" else 45
+    return {"type": "command", "command": command, "timeout": timeout}
 
 
-def configure(agent: str, workspace: Path, detector: str, shell: str) -> Path:
+def configure(
+    agent: str, workspace: Path, detector: str, shell: str | None = None, audit_db: Path | None = None,
+) -> Path:
     workspace = workspace.resolve(strict=True)
     if not workspace.is_dir():
         raise ValueError("Workspace must be a directory.")
+    if shell is None:
+        shell = ("cmd" if agent == "antigravity" else "powershell") if os.name == "nt" else "posix"
+    if audit_db is not None:
+        audit_db = (workspace / audit_db).resolve()
     directory = workspace / HOOK_DIRECTORY[agent]
     path = directory / "hooks.json"
     if directory.is_symlink() or path.is_symlink() or not path.resolve().is_relative_to(workspace):
@@ -106,15 +157,15 @@ def configure(agent: str, workspace: Path, detector: str, shell: str) -> Path:
             for group in groups:
                 for handler in group.get("hooks", []):
                     if marker in handler.get("command", ""):
-                        handler.update(command_for(event, detector, shell))
+                        handler.update(command_for(event, detector, shell, audit_db))
                         break
                 else:
                     continue
                 break
             else:
-                groups.append({"hooks": [command_for(event, detector, shell)]})
+                groups.append({"hooks": [command_for(event, detector, shell, audit_db)]})
     else:
-        config[HOOK_GROUP] = {"PreInvocation": [command_for("antigravity-prompt", detector, shell)]}
+        config[HOOK_GROUP] = {"PreInvocation": [command_for("antigravity-prompt", detector, shell, audit_db)]}
 
     directory.mkdir(exist_ok=True)
     temp_path = None
@@ -136,18 +187,19 @@ def main() -> int:
     install = sub.add_parser("install", help="Install hooks in one workspace")
     install.add_argument("agent", choices=HOOK_DIRECTORY)
     install.add_argument("--workspace", type=Path, default=Path.cwd())
-    install.add_argument("--shell", choices=["posix", "powershell"],
-                         default="powershell" if os.name == "nt" else "posix")
+    install.add_argument("--shell", choices=["posix", "powershell", "cmd"],
+                         help="Override the native hook shell for this agent and platform.")
     hook = sub.add_parser("hook", help="Process one JSON event from stdin")
     hook.add_argument("event", choices=["codex-prompt", "codex-result", "antigravity-prompt"])
     for command in (install, hook):
         command.add_argument("--detector", choices=["ollama", "rules"], default="ollama")
+        command.add_argument("--audit-db", type=Path, help="Record decisions in the shared security-events database.")
     args = parser.parse_args()
     if args.mode == "hook":
-        print(json.dumps(screen(args.event, args.detector)))
+        print(json.dumps(screen(args.event, args.detector, args.audit_db)))
     else:
         try:
-            print(configure(args.agent, args.workspace, args.detector, args.shell))
+            print(configure(args.agent, args.workspace, args.detector, args.shell, args.audit_db))
         except (ValueError, OSError, TypeError, AttributeError) as error:
             parser.exit(1, f"Could not install hooks: {error}\n")
     return 0
