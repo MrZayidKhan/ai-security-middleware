@@ -13,6 +13,11 @@ The project builds an installable security layer for AI agents. It evaluates unt
 
 ## Supported surfaces
 
+Windows x64 distribution includes an offline detector, guided agent setup,
+shared audit dashboard, a local sanitation API, and a workspace-aware
+uninstaller. The sanitation API allows compatible clients to use cleaned
+text. Native workspace hooks withhold text that requires replacement.
+
 | Surface | Current scope |
 | --- | --- |
 | Codex | Workspace hooks inspect typed prompts and tool results delivered to `PostToolUse`. The hook withholds text requiring sanitization or review. A withheld tool result is replaced with feedback. Any side effects from the tool have already occurred. |

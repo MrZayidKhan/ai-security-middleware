@@ -1,0 +1,9 @@
+{
+  "revision": "2efc2ed5abecd21eb45c2506d231a65d6e392b85",
+  "window_tokens": 512,
+  "overlap_tokens": 64,
+  "review_threshold": 0.5,
+  "high_risk_threshold": 0.9,
+  "mode": "advisory",
+  "automatic_blocking_approved": false
+}

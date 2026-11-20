@@ -6,6 +6,11 @@ without a repository checkout.
 
 ## Choose a download
 
+For the combined Windows x64 package, download
+`distribution-all-in-one-windows-x64` from a successful GitHub Actions run.
+Extract the inner ZIP and run **Setup.cmd**. It includes the detector,
+dashboard, sanitation service, and uninstaller. The package uses Python 3.14.
+
 - For a versioned build, open the repository's **Releases** and download the
   Python wheel and a `security-dashboard-windows-*` ZIP archive.
 - For a branch build, open **Actions → Build, test, and package**, choose a

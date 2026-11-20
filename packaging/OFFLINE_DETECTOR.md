@@ -50,6 +50,18 @@ Use `antigravity` in place of `codex` for that integration. Follow the agent's
 workspace hook enablement flow. The archive includes the model license and
 upstream model card in `model`. Horizon Small is an experimental classifier.
 
+## Sanitize or uninstall
+
+Run **Open Sanitizer.cmd** to start the loopback screening service. Clients
+that can replace model-bound text can use `POST /api/sanitize` and forward the
+returned messages only after a successful response. The native workspace
+hooks withhold requests that require sanitation.
+
+Close the agent, dashboard and sanitizer, then run **Uninstall.cmd**. It
+disconnects the workspaces recorded by this installation and removes managed
+bundle files. Your audit database remains in `runtime_data`. For workspaces
+configured by an older installer, rerun Setup first to register them.
+
 ## Build a bundle from the repository
 
 On a connected Windows packaging machine with Python 3.13, build a clean

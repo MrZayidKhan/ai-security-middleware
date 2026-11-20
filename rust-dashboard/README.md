@@ -9,6 +9,9 @@ new events.
 
 ## Run on Windows
 
+In the all-in-one x64 bundle, run **Setup.cmd** and then **Open Dashboard.cmd**.
+Setup gives the workspace hooks and dashboard the same audit database.
+
 Open the built executable, or provide a specific database path:
 
 ```powershell

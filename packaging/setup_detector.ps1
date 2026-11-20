@@ -34,21 +34,27 @@ try {
         throw 'Extract the entire setup ZIP before running Setup.cmd.'
     }
     $venv = Join-Path $PSScriptRoot '.venv'
-    if (-not (Get-Command py.exe -ErrorAction SilentlyContinue)) {
-        throw 'This setup needs matching Windows Python with the Python launcher.'
-    }
     $runtime = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'python-version.txt') -Raw).Trim()
     if ($runtime -notmatch '^3\.(13|14)$') { throw 'Invalid bundled Python version.' }
-    & py.exe "-$runtime" -m venv $venv
+    $pythonCommand = Get-Command python.exe -ErrorAction SilentlyContinue
+    if ($pythonCommand -and (& $pythonCommand.Source -c "import sys; print('.'.join(map(str, sys.version_info[:2])))") -eq $runtime) {
+        & $pythonCommand.Source -m venv $venv
+    } elseif (Get-Command py.exe -ErrorAction SilentlyContinue) {
+        & py.exe "-$runtime" -m venv $venv
+    } else {
+        throw "This setup needs Windows Python $runtime."
+    }
     if ($LASTEXITCODE -ne 0) { throw "Could not create the Python $runtime environment." }
     $python = Join-Path $venv 'Scripts\python.exe'
-    & $python -m pip --isolated install --disable-pip-version-check --no-index --find-links $wheels ai-security-middleware onnxruntime tokenizers numpy
+    & $python -m pip --isolated install --disable-pip-version-check --no-index --find-links $wheels 'ai-security-middleware[gateway]' onnxruntime tokenizers numpy
     if ($LASTEXITCODE -ne 0) { throw 'Offline dependency installation failed. Check Python and CPU compatibility.' }
     & $python -c "import sys; from pathlib import Path; from security_middleware.horizon_detector import HorizonDetector; result = HorizonDetector.from_advisory_profile(Path(sys.argv[1])).detect('Summarize these notes.'); sys.exit(result.risk == 'unavailable')" $model
     if ($LASTEXITCODE -ne 0) { throw 'The offline detector failed its startup check.' }
     $auditDb = Join-Path $PSScriptRoot 'runtime_data\security_events.db'
     & $python -c "import sys; from pathlib import Path; from security_middleware.audit_log import initialize_audit_database; path = Path(sys.argv[1]); path.parent.mkdir(exist_ok=True); initialize_audit_database(path)" $auditDb
     if ($LASTEXITCODE -ne 0) { throw 'Could not initialize the dashboard audit database.' }
+    & $python (Join-Path $PSScriptRoot 'uninstall_detector.py') --register $Agent $Workspace
+    if ($LASTEXITCODE -ne 0) { throw 'Could not register the workspace for uninstall.' }
     & $python -m security_middleware.agent_hooks install $Agent --workspace $Workspace --detector offline --model-dir $model --audit-db $auditDb
     if ($LASTEXITCODE -ne 0) { throw 'Could not configure the agent workspace.' }
     Write-Host "Configured $Agent for $Workspace. Reopen the workspace and enable the generated hooks in the agent."

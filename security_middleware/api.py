@@ -82,11 +82,14 @@ def ollama_response(result, stream):
 
 
 def create_app(inspector=None, client=None, audit=None, *, detector_label='rules+required-local-qwen',
-               ollama_cli=False, answer_model: str = 'qwen3.5:4b', demo_screening=False) -> FastAPI:
+               ollama_cli=False, answer_model: str = 'qwen3.5:4b', demo_screening=False,
+               sanitize_only=False) -> FastAPI:
+    if sanitize_only and inspector is None:
+        raise ValueError('Sanitation requires an explicit inspector.')
     app = FastAPI(title='Local prompt security middleware', version='0.1.0')
     scanner = inspector or ContentInspector(assessor=OllamaContentAssessor(),
                                           require_assessment_for_untrusted=True)
-    model_client = client or OllamaClient(model_name=answer_model)
+    model_client = None if sanitize_only else client or OllamaClient(model_name=answer_model)
     # HTTP caller controls every role: even claimed assistant history is untrusted.
     boundary = PromptSecurityMiddleware(scanner, inspect_roles=frozenset({'user', 'tool', 'assistant'}))
     capacity = BoundedSemaphore(1)
@@ -132,12 +135,12 @@ def create_app(inspector=None, client=None, audit=None, *, detector_label='rules
     def health():
         return {'service': 'prompt-security-middleware', 'status': 'running',
                 'detectors': detector_label, 'upstream_checked': False,
-                'answer_model': answer_model}
+                'answer_model': None if sanitize_only else answer_model}
 
     def handle_chat(payload: ChatRequest, *, screen_only=False):
         if payload.stream and not ollama_cli:
             raise HTTPException(422, 'Streaming is not supported by this gateway.')
-        if payload.model != answer_model:
+        if not sanitize_only and payload.model != answer_model:
             raise HTTPException(422, 'Model is not configured for this local gateway.')
         if not capacity.acquire(blocking=False):
             raise HTTPException(429, 'Middleware busy; retry later.')
@@ -155,8 +158,11 @@ def create_app(inspector=None, client=None, audit=None, *, detector_label='rules
                     'request_id': request_id, 'reason': screened.reason, 'model_called': False,
                     'content_decisions': decisions})
             if screen_only:
-                return {'model_called': False, 'middleware': {
+                result = {'model_called': False, 'middleware': {
                     'request_id': request_id, 'decision': 'RELEASED', 'content_decisions': decisions}}
+                if sanitize_only:
+                    result['messages'] = [{'role': m.role, 'content': m.content} for m in screened.messages]
+                return result
             forwarded = screened.messages
             digest = sha256(json.dumps([m.model_dump() for m in forwarded], sort_keys=True).encode()).hexdigest()
             # Persist authorization before the upstream side effect; failure stops forwarding.
@@ -179,6 +185,13 @@ def create_app(inspector=None, client=None, audit=None, *, detector_label='rules
                                    'content_decisions': decisions, 'forwarded_sha256': digest}}
         finally:
             capacity.release()
+
+    if sanitize_only:
+        @app.post('/api/sanitize')
+        def sanitize(payload: ChatRequest):
+            return handle_chat(payload, screen_only=True)
+
+        return app
 
     if demo_screening:
         @app.post('/api/demo/screen')

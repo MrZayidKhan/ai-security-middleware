@@ -79,6 +79,15 @@ intercepted. It must be configured to use the gateway or an available hook.
 
 ## Windows quick start
 
+Download `distribution-all-in-one-windows-x64` from a successful
+[GitHub Actions run](https://github.com/MrZayidKhan/ai-security-middleware/actions).
+Extract the artifact and its inner ZIP, run **Setup.cmd**, and choose your
+agent and workspace. **Open Dashboard.cmd** shows local decisions.
+**Open Sanitizer.cmd** starts the local sanitation API for clients that
+can substitute screened text. The workspace hooks can withhold text that
+requires sanitation. **Uninstall.cmd** disconnects workspaces recorded by
+Setup and removes its managed files.
+
 Use Python 3.10 or newer. From a PowerShell window in the repository:
 
 ```powershell
@@ -86,10 +95,11 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install .
 ```
 
-Start the gateway in deterministic rules mode first:
+Install the gateway dependencies before running it from source:
 
 ```powershell
-.\.venv\Scripts\python.exe -m scripts.run_middleware --detector rules
+.\.venv\Scripts\python.exe -m pip install ".[gateway]"
+.\.venv\Scripts\python.exe -m scripts.run_middleware --detector english-verifier
 ```
 
 The HTTP endpoint is `http://127.0.0.1:8787`. Interactive API documentation is
@@ -143,6 +153,13 @@ Use [manual testing](docs/MANUAL_TESTING.md) for benign, direct-injection,
 indirect-injection, sanitation, and review cases. Report accuracy, precision,
 recall, F1, false-positive rate, false-negative rate, and latency on a held-out
 set. Do not tune thresholds on the final test set.
+
+Run the shipped detector and rules-only baseline side by side with
+`python -m scripts.evaluate_offline_detector --model-dir models/pretrained/horizon-small --output offline-evaluation.json`.
+The report lists input sources and counts, direct and indirect results,
+accuracy, precision, recall, F1, and latency. The evaluator reads local
+datasets. See [dataset import](docs/DATASET_IMPORT.md) and
+[Horizon setup](docs/HORIZON_SETUP.md).
 
 ## What remains to be done
 
