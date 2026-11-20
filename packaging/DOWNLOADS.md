@@ -11,15 +11,9 @@ For the combined Windows x64 package, download
 Extract the inner ZIP and run **Setup.cmd**. It includes the detector,
 dashboard, sanitation service, and uninstaller. The package uses Python 3.14.
 
-- For a versioned build, open the repository's **Releases** and download the
-  Python wheel and a `security-dashboard-windows-*` ZIP archive.
-- For a branch build, open **Actions → Build, test, and package**, choose a
-  successful Windows run, and download `distribution-python` and the Windows
-  dashboard artifact.
-
-The current release workflow produces Windows x64 and Windows ARM64 dashboard
-archives. macOS and Linux builds are intentionally disabled while the Windows
-workflow is being stabilized and will be added back later.
+Versioned releases publish **Prompt-Security-All-in-One-Windows-x64.zip**
+and its checksum. For development, successful Actions runs also provide
+the standalone wheel and Windows dashboard artifacts.
 
 ## Install the middleware
 

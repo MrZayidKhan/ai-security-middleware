@@ -30,7 +30,8 @@ def package(model_dir: Path, wheelhouse: Path, output: Path, python_version: str
             if actual != expected:
                 raise ValueError(f'Model checksum mismatch: {file.name}')
     wheels = sorted(wheelhouse.glob('*.whl'))
-    for distribution in ('ai_security_middleware', 'onnxruntime', 'tokenizers', 'numpy'):
+    for distribution in ('ai_security_middleware', 'onnxruntime', 'tokenizers', 'numpy',
+                         'fastapi', 'uvicorn'):
         if not any(file.name.lower().startswith(distribution + '-') for file in wheels):
             raise ValueError(f'Wheelhouse is missing a {distribution} wheel')
     if output.suffix.lower() != '.zip' or output.exists():

@@ -131,7 +131,7 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           path: assets
-          pattern: distribution-*
+          name: distribution-all-in-one-windows-x64
           merge-multiple: true
       - name: Publish verified artifacts with checksums
         shell: pwsh
@@ -140,13 +140,13 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           Set-Location assets
-          $files = @(Get-ChildItem -File | Where-Object { $_.Name -match '\.(whl|zip)$' })
+          $files = @(Get-Item -LiteralPath Prompt-Security-All-in-One-Windows-x64.zip)
           $hashes = $files | ForEach-Object {
             $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
             "$hash  $($_.Name)"
           }
           $hashes | Set-Content SHA256SUMS.txt
-          $releaseFiles = @($files.FullName) + @((Resolve-Path DOWNLOADS.md).Path, (Resolve-Path SHA256SUMS.txt).Path)
+          $releaseFiles = @($files.FullName) + @((Resolve-Path SHA256SUMS.txt).Path)
           gh release create $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --verify-tag --generate-notes -- $releaseFiles
 
   offline-setup:
