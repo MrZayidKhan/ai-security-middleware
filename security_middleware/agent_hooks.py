@@ -39,7 +39,7 @@ def record_inspection(audit_db: Path, event: str, detector: str, released: bool,
         pass
 
 
-def screen(event: str, detector: str, audit_db: Path | None = None) -> dict:
+def screen(event: str, detector: str, audit_db: Path | None = None, model_dir: Path | None = None) -> dict:
     reason = "Prompt security inspection unavailable."
     released = False
     try:
@@ -71,13 +71,21 @@ def screen(event: str, detector: str, audit_db: Path | None = None) -> dict:
             raise ValueError("Expected text")
 
         assessor = None
+        classifier = None
+        if detector == "offline":
+            from security_middleware.horizon_detector import HorizonDetector
+
+            if model_dir is None:
+                raise ValueError("Offline detector requires a model directory")
+            classifier = HorizonDetector.from_advisory_profile(model_dir)
         if detector == "ollama":
             # Leave time for a cold model load while still returning a decision before the host deadline.
             client = OllamaClient(timeout_seconds=OLLAMA_REQUEST_TIMEOUT_SECONDS,
                                   response_format=ModelAssessment.model_json_schema())
             assessor = OllamaContentAssessor(client)
         middleware = PromptSecurityMiddleware(
-            ContentInspector(assessor=assessor, require_assessment_for_untrusted=detector == "ollama")
+            ContentInspector(assessor=assessor, require_assessment_for_untrusted=detector == "ollama",
+                             detector=classifier)
         )
         role = "tool" if is_tool_result else "user"
         result = middleware.before_model([ChatMessage(role=role, content=content)])
@@ -105,23 +113,26 @@ def screen(event: str, detector: str, audit_db: Path | None = None) -> dict:
     return {"decision": "block", "reason": reason}
 
 
-def command_for(event: str, detector: str, shell: str, audit_db: Path | None = None) -> dict:
+def command_for(event: str, detector: str, shell: str, audit_db: Path | None = None,
+                model_dir: Path | None = None) -> dict:
     executable = str(Path(sys.executable).absolute())
     args = ["-m", "security_middleware.agent_hooks", "hook", event, "--detector", detector]
+    options = [(flag, str(path)) for flag, path in
+               (("--audit-db", audit_db), ("--model-dir", model_dir)) if path is not None]
     if shell == "powershell":
         command = "& '" + executable.replace("'", "''") + "' " + " ".join(args)
-        if audit_db is not None:
-            command += " --audit-db '" + str(audit_db).replace("'", "''") + "'"
+        for flag, value in options:
+            command += f" {flag} '" + value.replace("'", "''") + "'"
     elif shell == "cmd":
-        paths = [executable, str(audit_db)] if audit_db is not None else [executable]
+        paths = [executable, *(value for _, value in options)]
         if any(set(path).intersection('%!"\r\n') for path in paths):
             raise ValueError("CMD hook paths cannot contain %, !, quotes, or newlines.")
         command = f'"{executable}" ' + " ".join(args)
-        if audit_db is not None:
-            command += f' --audit-db "{audit_db}"'
+        for flag, value in options:
+            command += f' {flag} "{value}"'
     else:
-        if audit_db is not None:
-            args.extend(["--audit-db", str(audit_db)])
+        for flag, value in options:
+            args.extend([flag, value])
         command = shlex.join([executable, *args])
     timeout = OLLAMA_HOOK_TIMEOUT_SECONDS if detector == "ollama" else 45
     return {"type": "command", "command": command, "timeout": timeout}
@@ -129,6 +140,7 @@ def command_for(event: str, detector: str, shell: str, audit_db: Path | None = N
 
 def configure(
     agent: str, workspace: Path, detector: str, shell: str | None = None, audit_db: Path | None = None,
+    model_dir: Path | None = None,
 ) -> Path:
     workspace = workspace.resolve(strict=True)
     if not workspace.is_dir():
@@ -137,6 +149,10 @@ def configure(
         shell = ("cmd" if agent == "antigravity" else "powershell") if os.name == "nt" else "posix"
     if audit_db is not None:
         audit_db = (workspace / audit_db).resolve()
+    if detector == "offline":
+        if model_dir is None or not (workspace / model_dir).is_dir():
+            raise ValueError("Supply an installed offline model directory with --model-dir.")
+        model_dir = (workspace / model_dir).resolve()
     directory = workspace / HOOK_DIRECTORY[agent]
     path = directory / "hooks.json"
     if directory.is_symlink() or path.is_symlink() or not path.resolve().is_relative_to(workspace):
@@ -157,15 +173,15 @@ def configure(
             for group in groups:
                 for handler in group.get("hooks", []):
                     if marker in handler.get("command", ""):
-                        handler.update(command_for(event, detector, shell, audit_db))
+                        handler.update(command_for(event, detector, shell, audit_db, model_dir))
                         break
                 else:
                     continue
                 break
             else:
-                groups.append({"hooks": [command_for(event, detector, shell, audit_db)]})
+                groups.append({"hooks": [command_for(event, detector, shell, audit_db, model_dir)]})
     else:
-        config[HOOK_GROUP] = {"PreInvocation": [command_for("antigravity-prompt", detector, shell, audit_db)]}
+        config[HOOK_GROUP] = {"PreInvocation": [command_for("antigravity-prompt", detector, shell, audit_db, model_dir)]}
 
     directory.mkdir(exist_ok=True)
     temp_path = None
@@ -192,14 +208,15 @@ def main() -> int:
     hook = sub.add_parser("hook", help="Process one JSON event from stdin")
     hook.add_argument("event", choices=["codex-prompt", "codex-result", "antigravity-prompt"])
     for command in (install, hook):
-        command.add_argument("--detector", choices=["ollama", "rules"], default="ollama")
+        command.add_argument("--detector", choices=["ollama", "rules", "offline"], default="ollama")
+        command.add_argument("--model-dir", type=Path, help="Directory containing the offline classifier.")
         command.add_argument("--audit-db", type=Path, help="Record decisions in the shared security-events database.")
     args = parser.parse_args()
     if args.mode == "hook":
-        print(json.dumps(screen(args.event, args.detector, args.audit_db)))
+        print(json.dumps(screen(args.event, args.detector, args.audit_db, args.model_dir)))
     else:
         try:
-            print(configure(args.agent, args.workspace, args.detector, args.shell, args.audit_db))
+            print(configure(args.agent, args.workspace, args.detector, args.shell, args.audit_db, args.model_dir))
         except (ValueError, OSError, TypeError, AttributeError) as error:
             parser.exit(1, f"Could not install hooks: {error}\n")
     return 0

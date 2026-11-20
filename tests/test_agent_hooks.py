@@ -113,3 +113,13 @@ def test_ollama_hook_deadline_exceeds_request_deadline():
     assert OLLAMA_REQUEST_TIMEOUT_SECONDS >= 60
     assert hook["timeout"] > OLLAMA_REQUEST_TIMEOUT_SECONDS
     assert command_for("codex-prompt", "rules", "posix")["timeout"] == 45
+
+
+def test_offline_hook_holds_when_model_is_missing(tmp_path):
+    result = subprocess.run(
+        [sys.executable, "-m", "security_middleware.agent_hooks", "hook", "codex-prompt",
+         "--detector", "offline", "--model-dir", str(tmp_path)],
+        input=json.dumps({"prompt": "Summarize these meeting notes."}),
+        text=True, capture_output=True, check=True, timeout=30,
+    )
+    assert json.loads(result.stdout)["decision"] == "block"

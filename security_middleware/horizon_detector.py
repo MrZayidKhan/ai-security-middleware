@@ -49,7 +49,10 @@ class HorizonDetector:
             from tokenizers import Tokenizer
             for filename, expected in CHECKSUMS.items():
                 with (model_directory/filename).open('rb') as handle:
-                    if hashlib.file_digest(handle,'sha256').hexdigest() != expected:
+                    digest = hashlib.sha256()
+                    for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+                        digest.update(chunk)
+                    if digest.hexdigest() != expected:
                         raise ValueError('Model checksum mismatch')
             config = json.loads((model_directory/'config.json').read_text(encoding='utf-8'))
             if config['id2label'] != {'0':'SAFE','1':'INJECTION'}:
