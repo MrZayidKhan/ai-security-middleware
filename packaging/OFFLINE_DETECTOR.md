@@ -14,6 +14,11 @@ and enable the generated hooks in your agent. Run Setup again to connect
 another workspace. Keep the extracted files in place because the hooks refer
 to them.
 
+Double-click **Open Dashboard.cmd** in the same folder. Setup configures
+each workspace to record new screening decisions in the shared audit database
+at `runtime_data/security_events.db`. Run Setup again for any workspace
+configured with an earlier bundle to update its hooks.
+
 The launcher requires the Windows CPython version listed in
 `python-version.txt`, the Python launcher, and a wheelhouse matching the
 machine architecture. For scripted setup, run
@@ -58,7 +63,7 @@ license terms when distributing the bundle.
 ```powershell
 py -3.13 -m build --wheel --outdir .\dist\offline-build
 py -3.13 -m pip wheel --wheel-dir .\dist\offline-wheelhouse --only-binary=:all: .\dist\offline-build\ai_security_middleware-0.1.0-py3-none-any.whl 'onnxruntime==1.32.0' 'tokenizers==0.23.3' numpy
-py -3.13 .\packaging\package_offline_detector.py --model-dir .\models\pretrained\horizon-small --wheelhouse .\dist\offline-wheelhouse --output .\dist\offline-detector-windows-x64-py313.zip
+py -3.13 .\packaging\package_offline_detector.py --model-dir .\models\pretrained\horizon-small --wheelhouse .\dist\offline-wheelhouse --dashboard .\rust-dashboard\target\release\security-dashboard.exe --output .\dist\offline-detector-windows-x64-py313.zip
 ```
 
 Use clean repository wheel output and verify the wheelhouse with the offline

@@ -46,9 +46,13 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Offline dependency installation failed. Check Python and CPU compatibility.' }
     & $python -c "import sys; from pathlib import Path; from security_middleware.horizon_detector import HorizonDetector; result = HorizonDetector.from_advisory_profile(Path(sys.argv[1])).detect('Summarize these notes.'); sys.exit(result.risk == 'unavailable')" $model
     if ($LASTEXITCODE -ne 0) { throw 'The offline detector failed its startup check.' }
-    & $python -m security_middleware.agent_hooks install $Agent --workspace $Workspace --detector offline --model-dir $model
+    $auditDb = Join-Path $PSScriptRoot 'runtime_data\security_events.db'
+    & $python -c "import sys; from pathlib import Path; from security_middleware.audit_log import initialize_audit_database; path = Path(sys.argv[1]); path.parent.mkdir(exist_ok=True); initialize_audit_database(path)" $auditDb
+    if ($LASTEXITCODE -ne 0) { throw 'Could not initialize the dashboard audit database.' }
+    & $python -m security_middleware.agent_hooks install $Agent --workspace $Workspace --detector offline --model-dir $model --audit-db $auditDb
     if ($LASTEXITCODE -ne 0) { throw 'Could not configure the agent workspace.' }
     Write-Host "Configured $Agent for $Workspace. Reopen the workspace and enable the generated hooks in the agent."
+    Write-Host 'Double-click Open Dashboard.cmd in this folder to view new decisions.'
 } catch {
     Write-Host "Setup failed: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
