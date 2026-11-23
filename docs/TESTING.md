@@ -1,5 +1,31 @@
 # Testing Plan
 
+## Current Windows checkpoint
+
+Run the focused ACP, native hooks, launcher, and uninstall tests from the
+repository root, then run the Rust tests:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/test_acp_guard.py tests/test_agent_hooks.py tests/test_protected_agent.py tests/test_bundle_uninstall.py -q
+cargo test --locked --manifest-path rust-dashboard/Cargo.toml
+```
+
+The focused local checkpoint recorded **23 Python and 2 Rust tests passed**.
+The Windows ACP bridge test used real Horizon and a simulated agent. It
+exercised accepted prompts, automatic cleanup, held draft release in the same
+session, cancellation, and rejected drafts. A fresh Windows bundle installed
+in ACP mode without registering any workspace hooks. Signed-in Antigravity
+and Codex sessions in Zed remain pending.
+
+The [manual test guide](MANUAL_TESTING.md) covers live workflow checks.
+The [saved evaluation](offline_detector_evaluation.json) covers English
+detector effectiveness on 1,811 examples. Keep workflow verification and
+detector accuracy separate. The report counts HOLD and SANITIZE as detections,
+but yielded no SANITIZE outcomes for the combined detector in that batch.
+Use a separate fixture to demonstrate redaction.
+
+## Earlier local demo and hook checkpoints
+
 ## Installed agent guard
 
 The wheel and generated hook commands passed a Windows rules-mode smoke test. From a clean source snapshot, `python -m pytest tests/test_agent_hooks.py tests/test_middleware.py tests/test_middleware_policy.py -q` passed 18 tests. These checks cover command responses and middleware decisions. The [project scope](PROJECT_SCOPE.md) defines the remaining live-agent and platform acceptance tests.

@@ -1,5 +1,10 @@
 # Install the prompt guard for Codex or Google Antigravity
 
+These instructions configure native workspace hooks. For the Windows bundle,
+run **Configure Workspace Hooks.cmd**. For automatic prompt cleanup
+in a persistent editor session, run **Setup.cmd** and
+follow the [ACP bundle instructions](../packaging/OFFLINE_DETECTOR.md#protected-chat-in-an-acp-editor).
+
 Install from a Git clone or a downloaded wheel on Windows with Python 3.10 or
 newer. Windows is the currently supported platform; macOS and Linux hook
 support is deferred until the Windows path is stable. You need a version of
@@ -48,7 +53,8 @@ text rules only. Use that mode to smoke-test the Windows setup.
 To see hook decisions in the desktop dashboard, install the hook with
 `--audit-db <absolute-path-to-security_events.db>`. Point it at the same file
 as the dashboard and, if used, the gateway. The hook records the integration,
-screened input type, and decision without storing prompt or tool-result text.
+screened input type, and decision. Offline hook events may include blocked typed
+prompts for local review, as described below.
 See [standalone setup](STANDALONE_SETUP.md) for the default gateway paths.
 
 Restart or reopen the agent in that workspace. For Codex, trust the project and
@@ -67,7 +73,15 @@ See [Project Objectives and Scope](PROJECT_SCOPE.md) for acceptance criteria and
 | Antigravity | Latest typed prompt at `PreInvocation` | `.agents/hooks.json` |
 
 The hooks block text that requires review or sanitization because these hook
-contracts do not replace a typed prompt with the sanitized version. On supported
+contracts do not replace a typed prompt with the sanitized version. In offline
+mode, when the rules can redact a line and Horizon accepts the remainder, the
+block message includes the cleaned prompt for the user to review and submit in a
+new chat. The original stays blocked. In offline mode the local dashboard
+database retains blocked typed prompts up to 20,000 characters, rule matches,
+and any cleaned replacement for review. Passed prompts and tool results are
+excluded from this capture. Treat this database as sensitive. The dashboard can
+copy reviewed text for resubmission through the normal inspection path.
+On supported
 Codex tool calls, a block replaces the model-visible result and leaves the tool's
 completed side effects intact. Antigravity's native `PostToolUse` payload doesn't
 provide the result text to inspect. Attachments, internal context and paths that

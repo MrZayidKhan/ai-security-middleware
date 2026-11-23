@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+from security_middleware.agent_hooks import configure, user_hook_directory
+
 
 spec = importlib.util.spec_from_file_location(
     "uninstall_detector", Path(__file__).resolve().parents[1] / "packaging" / "uninstall_detector.py"
@@ -53,3 +55,39 @@ def test_uninstall_disconnects_owned_hook_and_retains_audit(tmp_path, monkeypatc
     assert json.loads(path.read_text(encoding="utf-8")) == expected
     assert audit.read_bytes() == b"audit history"
     assert {item.name for item in bundle.iterdir()} == {"runtime_data"}
+
+
+@pytest.mark.parametrize("agent", ["codex", "antigravity"])
+def test_user_hooks_setup_is_idempotent_and_uninstall_preserves_other_hooks(tmp_path, monkeypatch, agent):
+    profile = tmp_path.resolve() / "profile"
+    profile.mkdir()
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: profile))
+    monkeypatch.delenv("CODEX_HOME", raising=False)
+    bundle = tmp_path.resolve() / "bundle"
+    bundle.mkdir()
+    (bundle / "model").mkdir()
+    (bundle / "python-version.txt").touch()
+    monkeypatch.setattr(uninstaller, "ROOT", bundle)
+    monkeypatch.setattr(uninstaller, "REGISTRY", bundle / "installed-workspaces.json")
+    monkeypatch.setattr("builtins.input", lambda _: "UNINSTALL")
+    audit = bundle / "runtime_data" / "security_events.db"
+    audit.parent.mkdir()
+    audit.touch()
+    path = user_hook_directory(agent) / "hooks.json"
+    path.parent.mkdir(parents=True)
+    original = {"other": {"enabled": False}}
+    path.write_text(json.dumps(original), encoding="utf-8")
+
+    for _ in range(2):
+        uninstaller.register(agent, bundle, user_level=True)
+        assert configure(agent, bundle, "offline", audit_db=audit, model_dir=bundle / "model",
+                         user_level=True) == path
+    assert len(uninstaller.read_json(uninstaller.REGISTRY)) == 1
+    assert path.read_text(encoding="utf-8").count("hook antigravity-prompt" if agent == "antigravity"
+                                                   else "hook codex-prompt") == 1
+
+    uninstaller.uninstall()
+
+    assert uninstaller.read_json(path)["other"] == original["other"]
+    assert "security_middleware.agent_hooks" not in path.read_text(encoding="utf-8")
+    assert audit.exists()

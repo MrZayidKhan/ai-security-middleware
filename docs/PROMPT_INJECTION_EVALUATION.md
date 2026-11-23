@@ -1,6 +1,26 @@
 # Prompt injection classifier evaluation
 
-The demo uses the pretrained Qwen 3.5 4B English verifier. Its weights were
+## Current Windows detector
+
+The offline bundle uses pretrained Horizon Small plus deterministic rules.
+The [saved English regression report](offline_detector_evaluation.json) scored
+1,811 examples after removing 22 repeats: 240 Horizon boundary pairs, 339
+NotInject prompts, 1,054 InjecAgent base cases and 178 BIPIA clean contexts.
+
+| Backend | Accuracy | Precision | Recall | F1 |
+| --- | ---: | ---: | ---: | ---: |
+| Rules only | 36.33% | 81.82% | 2.30% | 4.47% |
+| Rules + Horizon | 84.32% | 95.50% | 79.56% | 86.80% |
+
+Holds and sanitizations count as detections. There were no combined
+sanitizations in that report. Separate fixtures demonstrate redaction.
+The 90% overall accuracy target is open. Upstream training overlap is
+unknown, and the benign and positive indirect samples come from different
+sources. Reproduction commands are in the [project README](../README.md).
+
+## Earlier classifier and verifier experiments
+
+An earlier demo used the pretrained Qwen 3.5 4B English verifier. Its weights were
 **not trained or fine-tuned in this project**. The project developed the
 classification policy and structured verdict format. Qwen's upstream training
 corpus is outside the scope of this audit.
@@ -46,7 +66,7 @@ it was rejected. The [full-split JSON](full_corpora_word_char.json) preserves
 the artifact hash, source revisions and hashes, confusion matrices, exclusions,
 category metrics, and row-level uncertainty intervals.
 
-## Current Qwen verifier
+## Historical Qwen verifier
 
 | Completed check | Cases | Accuracy | Precision | Recall | F1 |
 |---|---:|---:|---:|---:|---:|

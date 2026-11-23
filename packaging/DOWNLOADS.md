@@ -8,12 +8,20 @@ without a repository checkout.
 
 For the combined Windows x64 package, download
 `distribution-all-in-one-windows-x64` from a successful GitHub Actions run.
-Extract the inner ZIP and run **Setup.cmd**. It includes the detector,
-dashboard, sanitation service, and uninstaller. The package uses Python 3.14.
+Extract the inner ZIP and run **Setup.cmd**. Current bundles include the
+offline detector, protected ACP chat adapter, dashboard review, sanitizer API,
+one-shot CLI launcher, and uninstaller. The x64 package uses Python 3.14.
+Setup installs without prompting for a mode or workspace. Run
+**Configure Workspace Hooks.cmd** for native hooks. Check the artifact's revision and bundled
+[setup guide](OFFLINE_DETECTOR.md), since older builds may use a different menu.
 
 Versioned releases publish **Prompt-Security-All-in-One-Windows-x64.zip**
 and its checksum. For development, successful Actions runs also provide
 the standalone wheel and Windows dashboard artifacts.
+
+The experimental **Protected Send** GUI installer is a separate local build.
+See its [build and verification guide](native_installer/README.md). The GitHub
+Actions all-in-one ZIP and the GUI installer cover different integrations.
 
 ## Install the middleware
 

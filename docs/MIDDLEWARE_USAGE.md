@@ -1,5 +1,20 @@
 # Local HTTP middleware
 
+## Offline sanitizer
+
+The Windows bundle's **Open Sanitizer.cmd** starts the loopback Rules + Horizon
+service. Use `POST /api/sanitize` with the existing bounded `messages` format.
+Successful responses contain inspected `messages` that the application can
+forward. A withheld request does not return released text. This route needs
+local Horizon model files and no answering model. Persistent editor chat and
+reviewed release use ACP, as described in the [bundle setup guide](../packaging/OFFLINE_DETECTOR.md).
+
+## Optional local answering-model gateway
+
+The remaining sections describe the legacy Ollama-compatible HTTP gateway
+and its prototype modes. Their setup and evaluation are separate from the
+offline sanitizer and ACP adapter.
+
 ## Performance behavior
 
 Definite validation, encoded-payload and exfiltration holds skip Qwen/ML inference because the request is already withheld. Other inputs still require the configured detectors. Successful Qwen assessments are cached per assessor instance by SHA-256 of exact inspected text, with a 60-second TTL and 128-entry LRU bound. Cache values are copied before reuse; errors are not cached. The cache is in-memory, not a persisted allowlist, and may retain matched excerpts until eviction/process shutdown. Restart to clear it or use `cache_size=0` when constructing an assessor to disable it. New assessor instances do not share entries; the long-lived HTTP service benefits most. Independent concurrent misses may duplicate computation.

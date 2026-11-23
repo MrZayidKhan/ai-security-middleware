@@ -1,42 +1,53 @@
 # Project Objectives and Scope
 
-The project builds an installable security layer for AI agents. It evaluates untrusted text at the points an integration controls and withholds suspicious text before the answering model receives it. Users can install the Python package from a Git clone or wheel and enable it in a supported workspace. The local Ollama application provides a separate environment for demonstrating the inspection, review, and action controls.
+The current release focus is experimental English text screening on Windows
+x64. An installable Python middleware evaluates text before a supported agent
+receives it. The standalone detector uses deterministic rules and pretrained
+Horizon Small through ONNX Runtime. The agent supplies the answering model and
+decides its tool permissions. See the [project README](../README.md) for setup.
 
 ## Objectives and acceptance criteria
 
 | Objective | Acceptance evidence |
 | --- | --- |
-| Make the guard installable | Build a wheel from a clean checkout and install it on Windows without relying on repository-specific paths. |
-| Protect supported agent context | In a live Codex and Antigravity workspace, submit a benign prompt and a harmless injection fixture. Verify that the benign turn proceeds and the held prompt is never sent to the answering model. In Codex, separately verify that a held result from a supported tool is replaced before the next model call. |
-| Keep content decisions separate from tool authority | Verify that passing inspection or approving an excerpt cannot grant permission to execute a disallowed action. Exercise this against the controlled local tool gateway. |
-| Assess effectiveness and usability | Report false positives, missed injections, sanitization outcomes, and latency on labeled direct and indirect text cases. Record the detector configuration and keep functional tests separate from accuracy measurements. |
+| Install on Windows | Extract one bundle and complete offline setup. ACP mode creates the runtime and audit database without requiring a workspace. Native hook mode accepts an explicit workspace. |
+| Protect a persistent conversation | Submit benign, removable, and held text to one ACP session. The agent receives accepted text only. A reviewed draft must be rechecked, use the same session, and never reach the agent after cancellation or expiry. |
+| Demonstrate live interoperability | Run the same flow in a signed-in Antigravity and Codex editor thread. Local verification with a simulated ACP agent is complete. Live signed-in verification remains open. |
+| Keep tool authority separate | A text verdict or review release does not authorize a tool. Demonstrate bounded action enforcement in the separate controlled demo. Design and test third-party pre-execution authorization independently. |
+| Measure effectiveness | Report accuracy, precision, recall, F1, false decisions, and timing with source counts and held-out policy configuration. Keep functional redaction and workflow evidence separate. |
 
 ## Supported surfaces
 
-Windows x64 distribution includes an offline detector, guided agent setup,
-shared audit dashboard, a local sanitation API, and a workspace-aware
-uninstaller. The sanitation API allows compatible clients to use cleaned
-text. Native workspace hooks withhold text that requires replacement.
-
-| Surface | Current scope |
+| Surface | Screening and release |
 | --- | --- |
-| Codex | Workspace hooks inspect typed prompts and tool results delivered to `PostToolUse`. The hook withholds text requiring sanitization or review. A withheld tool result is replaced with feedback. Any side effects from the tool have already occurred. |
-| Google Antigravity | Workspace `PreInvocation` hook inspects the latest typed prompt and can stop the model call. The native hook contract does not provide tool result text. |
-| Python integration | `PromptSecurityMiddleware` and `SecureChatClient` screen model-bound text at a boundary the application controls. Callers can forward sanitized replacements. |
-| Local HTTP and demo application | Bounded text requests to Ollama, protected retrieval from approved documents, exact-excerpt review, local events, and a separate action gateway for the controlled demo tools. |
-| Rust analytics dashboard | Native read-only desktop viewer for inspection decisions and audit events from a shared local SQLite database. Can open existing logs without an active model, agent, or gateway. |
+| ACP editor chat | Screens typed text blocks in a persistent session with Antigravity or the Codex ACP adapter. A rule-based rewrite can be delivered automatically. A held turn can accept an edited and rechecked dashboard draft within two minutes. |
+| Codex native workspace hooks | Screens typed prompts and supported `PostToolUse` results. A typed turn needing sanitization is withheld and may show a cleaned preview. A withheld tool result is replaced with feedback after the tool has already run. |
+| Antigravity native workspace hooks | Screens the latest typed prompt at `PreInvocation`. The hook can block and show a cleaned preview. It cannot replace the original typed turn or see native tool-result text. |
+| Protected CLI launcher | One prompt is screened before a fresh agent CLI turn starts. It passes only accepted text and stops on a hold. |
+| Offline HTTP sanitizer | Loopback `POST /api/sanitize` screens a bounded request and returns released messages for a caller to forward. It does not call an answering model. |
+| Python embedding | `PromptSecurityMiddleware` and `SecureChatClient` enforce configured text inspection where the application owns the model boundary. |
+| Rust dashboard | Shows recorded decisions and available prompt evidence from SQLite. It queues a revised draft for a pending ACP turn. It can view saved events without an agent running. |
 
-The hook package includes a rules mode and defaults to the local Ollama/Qwen assessor. It needs no development dataset or trained artifact. The host agent retains its model and permission controls. The hook package, the English contextual verifier, and the local demo have different configuration and evidence. Results for one do not automatically apply to the others.
+Compatibility and trust details are in [Agent Hooks](AGENT_HOOKS.md) and the
+[bundle guide](../packaging/OFFLINE_DETECTOR.md). A local answering-model demo
+with a controlled action gateway remains a separate prototype.
 
-## Limits and current verification
+## Limits
 
-- Coverage is opt-in and depends on the events the host runs. Attachments, internal context, and unhooked tool paths are outside coverage. Hook execution failures or timeouts can leave an input unscreened.
-- Universal agent compatibility, a browser extension, managed hosting, mobile installers, and operating-system sandboxing are outside the current release. Full tool authorization for third-party agents, comprehensive audit coverage, and automatic recovery of suspended agent sessions remain open.
-- The current package target is Windows. The installed wheel generated working Windows commands for all three supported hook events. Rules-mode fixtures exercised release and block, and local-verifier handler checks released benign fixtures for all three events. Live in-app hook trust, invocation, and enforcement in Codex and Antigravity still need verification. macOS and Linux packaging and hooks are intentionally deferred.
+- ACP accepts text blocks. Attachments, tool results and tool permissions
+  are outside ACP prompt screening. Native hook coverage depends on host
+  version, supported events, workspace trust and invocation. A host may
+  continue unscreened after a hook failure.
+- Automatic cleaned-text substitution is available at the ACP, launcher,
+  HTTP caller or Python boundary. Native desktop prompts use the preview and
+  resubmit workflow.
+- Held and sanitized typed text may be stored in the local audit database.
+  Review does not recover a disconnected or expired session.
+- Mobile, browser, managed deployment, and macOS or Linux packaging are out
+  of current scope. The 90% overall accuracy goal is open. The [saved English
+  regression report](offline_detector_evaluation.json) records the measured
+  batch and source limitations.
 
-The installed gateway supports an explicit audit database path. Agent hooks can
-write metadata-only decisions to the same database using their optional audit
-flag. See [standalone setup](STANDALONE_SETUP.md) for the Windows dashboard
-build target and how GitHub produces downloads.
-
-See the [agent setup guide](AGENT_HOOKS.md), [security model](SECURITY_MODEL.md), and [project tracker](PROJECT_TRACKER.md).
+Follow the [architecture](ARCHITECTURE.md), [security model](SECURITY_MODEL.md),
+and [project tracker](PROJECT_TRACKER.md) for the current state and remaining
+work.

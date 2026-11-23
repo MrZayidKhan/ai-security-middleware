@@ -1,5 +1,8 @@
 # English verifier: tested scope and results
 
+This is a historical verifier checkpoint. The Windows offline bundle uses
+Rules + Horizon. See the [current evaluation summary](PROMPT_INJECTION_EVALUATION.md).
+
 The opt-in English backend passes the current controlled-test acceptance gates.
 It is suitable for an English application-integration pilot with review and
 independent tool authorization. It is not proof of universal detection or a

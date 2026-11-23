@@ -4,7 +4,13 @@ Current launch commands are in [README](../README.md) and [middleware usage](MID
 
 ## Current state
 
-The repository includes a bounded demonstration agent loop, controlled local tools, an action gateway, hybrid content protection, a local review queue, concise security-event storage, and a Streamlit dashboard. A Python 3.14 virtual environment, selected project dependencies, Ollama, and the local `qwen3.5:4b` model are installed and verified.
+The current checkout includes the Windows offline Rules + Horizon detector,
+ACP adapter, native hooks, local sanitizer API, and Rust dashboard review.
+Use [Windows setup](STANDALONE_SETUP.md) and the [test plan](TESTING.md) for
+those features. The earlier Python agent loop, controlled tools, and Streamlit
+demo use a separate optional local model environment.
+
+## Historical development milestones
 
 ## Run and test Milestone 2
 

@@ -1,10 +1,17 @@
 # Setup and Installation
 
-Use the [agent hook setup](AGENT_HOOKS.md) to install from a Git clone or wheel on a machine running Codex or Antigravity. The steps below set up the full local Ollama development and demonstration environment on Windows.
+For the current Windows x64 offline installation, follow
+[Windows setup](STANDALONE_SETUP.md). ACP mode requires no workspace path.
+Use the [native hook guide](AGENT_HOOKS.md) if you prefer workspace hooks.
+
+The remaining instructions are for the optional legacy Ollama development
+and demonstration environment. They are not prerequisites for ACP or the
+standalone Rules + Horizon detector.
 
 ## Status
 
-The Python environment, Ollama installation, and local model are verified for the current development setup.
+The Python, Ollama, and model versions below describe the recorded legacy
+development environment.
 
 ## Verified Python setup
 

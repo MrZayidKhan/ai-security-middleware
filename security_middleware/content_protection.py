@@ -70,13 +70,27 @@ class ContentInspectionResult(BaseModel):
     duration_ms: float = 0
 
 
+def prompt_policy_outcome(result: ContentInspectionResult) -> str:
+    """Separate non-releasable policy violations from reviewable uncertainty."""
+    if result.decision != ContentDecision.HOLD_FOR_REVIEW:
+        return result.decision.value
+    if any(finding.rule_id in {"data-exfiltration-directive", "encoded-suspicious-payload"}
+           for finding in result.findings):
+        return "MALICIOUS_BLOCKED"
+    return "UNCERTAIN"
+
+
 class ContentInspector:
     """Combine validation, structural checks, rules, and a local-model signal."""
 
     _redaction_marker = "[Suspicious instruction removed.]"
     _override_instruction = re.compile(
-        r"(?im)^.*\b(?:ignore|disregard|override)\s+(?:all\s+)?"
-        r"(?:previous|prior|system|earlier)\s+(?:instructions|rules|messages).*?$"
+        r"(?im)^(?:.*\b(?:ignore|disregard|override)\s+(?:all\s+)?"
+        r"(?:previous|prior|system|earlier)\s+(?:instructions|rules|messages).*?"
+        r"|[ \t]*\[instruction to (?:the )?assistant:[ \t]*"
+        r"(?:ignore|disregard|override)[ \t]+(?:the[ \t]+)?"
+        r"(?:summary request|current task|user request)[ \t]+and[ \t]+"
+        r"(?:reply|respond|output)[ \t]+only\b[^\n\]]*\][ \t]*)$"
     )
     _data_exfiltration = re.compile(
         r"(?im)^.*\b(?:send|upload|reveal|share|exfiltrate)\b.*?"
@@ -92,6 +106,7 @@ class ContentInspector:
         require_assessment_for_untrusted: bool = False,
         detector: Detector | None = None,
         classify_sanitized_text: bool = False,
+        mark_redactions: bool = True,
     ) -> None:
         self._max_content_characters = max_content_characters
         if max_content_characters < 1:
@@ -102,6 +117,8 @@ class ContentInspector:
         if classify_sanitized_text and (detector is None or assessor is not None):
             raise ValueError("Rule-based sanitization requires a classifier and no assessor.")
         self._classify_sanitized_text = classify_sanitized_text
+        if not mark_redactions:
+            self._redaction_marker = ""
 
     def inspect(self, envelope: ContentEnvelope) -> ContentInspectionResult:
         """Aggregate advisory evidence without converting probability into spans."""
@@ -109,6 +126,8 @@ class ContentInspector:
         result = self._inspect(envelope)
         if result.decision is ContentDecision.SANITIZE:
             remainder = result.sanitized_content or ''
+            if not self._redaction_marker:
+                remainder = remainder.strip()
             remainder, findings = self._normalize(remainder)
             validation_error = self._validate_content(remainder)
             if (validation_error

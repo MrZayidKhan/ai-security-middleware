@@ -1,6 +1,13 @@
 # Local classifier training
 
-Latest review: [implementation review](IMPLEMENTATION_REVIEW.md). The expanded regression suite has 40 tests. Dataset hashes are now enforced before training; model cache reloads when the artifact changes. Evaluation refuses metrics on required-detector failure and writes `docs/detector_comparison_latest.json` by default; the earlier full comparison is historical evidence.
+These instructions reproduce earlier local classifier experiments. The
+Windows bundle uses pretrained Horizon Small and does not need a training
+step. See the [current evaluation summary](PROMPT_INJECTION_EVALUATION.md).
+
+At the [earlier implementation review](IMPLEMENTATION_REVIEW.md), the regression
+suite recorded 40 tests. The training checks enforce dataset hashes, and model
+cache reloads when the artifact changes. This evaluator writes
+`docs/detector_comparison_latest.json` by default.
 
 ## Current status
 

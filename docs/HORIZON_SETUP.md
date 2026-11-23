@@ -1,5 +1,11 @@
 # Horizon Small CPU setup
 
+Current Windows bundles include the pinned detector files and install their
+runtime offline. See the [bundle guide](../packaging/OFFLINE_DETECTOR.md) for
+normal installation and the [current regression report](offline_detector_evaluation.json)
+for the release policy results. The commands below reproduce separate
+source-level experiments.
+
 Downloaded the official quantized ONNX release:
 `Horizon-Labs/prompt-injection-guard-small`, revision
 `2efc2ed5abecd21eb45c2506d231a65d6e392b85`. License: Apache-2.0.

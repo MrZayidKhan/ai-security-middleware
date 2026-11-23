@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protected Send</title>
+<style>
+  :root { color-scheme: light dark; font: 14px/1.45 system-ui, sans-serif; }
+  body { margin: 0; padding: 16px; }
+  main { display: grid; gap: 12px; }
+  h1 { margin: 0; font-size: 18px; }
+  form { display: grid; gap: 8px; }
+  textarea { box-sizing: border-box; width: 100%; min-height: 120px; resize: vertical; }
+  textarea, button { font: inherit; padding: 8px; }
+  button { cursor: pointer; }
+  button:disabled { cursor: default; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  #status { margin: 0; overflow-wrap: anywhere; }
+  #status[data-tone="blocked"] { color: light-dark(#96231e, #ff9d96); }
+  #status[data-tone="held"] { color: light-dark(#795100, #ffd27c); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Protected Send</h1>
+  <form id="composer">
+    <label for="draft">Message for this conversation</label>
+    <textarea id="draft" rows="6" maxlength="20000" autocomplete="off" spellcheck="false"
+              aria-describedby="status" disabled></textarea>
+    <div class="actions">
+      <button id="send" type="submit" disabled>Check and send</button>
+      <button id="discard" type="button" hidden>Discard draft</button>
+    </div>
+  </form>
+  <p id="status" role="status" aria-live="polite">Connecting to Antigravity…</p>
+</main>
+<script>
+"use strict";
+
+const draft = document.getElementById("draft");
+const composer = document.getElementById("composer");
+const send = document.getElementById("send");
+const discard = document.getElementById("discard");
+const status = document.getElementById("status");
+const host = window.parent;
+const outgoing = new Map();
+let origin = null;
+let nextId = 1;
+let target;
+let phase = "connecting";
+let held = null;
+let approved = null;
+let pollTimer = null;
+let closed = false;
+let focusEpoch = 0;
+let receivedToolInput = false;
+const ticketFormat = /^[a-zA-Z0-9_-]{16,128}$/;
+const releaseDecisions = new Set(["PASS", "SANITIZE"]);
+const appProtocolVersion = "2026-01-26";
+
+function view(phaseName, message, tone = "") {
+  phase = phaseName;
+  status.textContent = message;
+  status.dataset.tone = tone;
+  draft.disabled = !["ready", "approved"].includes(phase);
+  draft.readOnly = phase === "approved";
+  send.disabled = !["ready", "approved"].includes(phase);
+  send.textContent = phase === "approved" ? "Send checked draft" : "Check and send";
+  discard.hidden = !["held", "approved"].includes(phase);
+}
+
+function post(packet) {
+  host.postMessage({ jsonrpc: "2.0", ...packet }, origin && origin !== "null" ? origin : "*");
+}
+
+function request(method, params, timeout = 30000) {
+  if (closed) return Promise.reject(new Error("Panel closed"));
+  const id = nextId++;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      outgoing.delete(id);
+      reject(new Error("Request timed out"));
+    }, timeout);
+    outgoing.set(id, { resolve, reject, timer });
+    try {
+      post({ id, method, params });
+    } catch (error) {
+      clearTimeout(timer);
+      outgoing.delete(id);
+      reject(error);
+    }
+  });
+}
+
+window.addEventListener("message", (event) => {
+  if (event.source !== host || (origin !== null && event.origin !== origin)) return;
+  const packet = event.data;
+  if (!packet || packet.jsonrpc !== "2.0") return;
+  if (packet.method === "ui/resource-teardown" && "id" in packet) {
+    shutdown();
+    post({ id: packet.id, result: {} });
+    return;
+  }
+  if (packet.method === "ui/notifications/host-context-changed") {
+    const presentationOnly = new Set(["theme", "styles", "containerDimensions", "safeAreaInsets", "displayMode"]);
+    const changed = Object.keys(packet.params || {});
+    if (changed.some((key) => !presentationOnly.has(key)) ||
+        (packet.params?.displayMode && packet.params.displayMode !== "inline")) {
+      shutdown();
+      view("stopped", "The chat context changed. Reopen Protected Send in the intended conversation.", "held");
+    }
+    return;
+  }
+  if (packet.method === "ui/notifications/tool-input") {
+    if (receivedToolInput) {
+      shutdown();
+      view("stopped", "The panel was reopened. Close it and reopen it in the intended conversation.", "held");
+    }
+    receivedToolInput = true;
+    return;
+  }
+  if (packet.method === "ping" && "id" in packet) {
+    post({ id: packet.id, result: {} });
+    return;
+  }
+  const pending = outgoing.get(packet.id);
+  if (!pending || (!("result" in packet) && !("error" in packet))) return;
+  if (origin === null) origin = event.origin;
+  outgoing.delete(packet.id);
+  clearTimeout(pending.timer);
+  if (packet.error) pending.reject(new Error("Host rejected request"));
+  else pending.resolve(packet.result);
+});
+
+async function call(name, args) {
+  const result = await request("tools/call", { name, arguments: { ...args, target } });
+  if (!result || result.isError || typeof result.structuredContent?.decision !== "string") {
+    throw new Error("Local check unavailable");
+  }
+  return result.structuredContent;
+}
+
+function stopPolling() {
+  clearTimeout(pollTimer);
+  pollTimer = null;
+}
+
+function shutdown() {
+  if (closed) return;
+  stopPolling();
+  const ticket = held;
+  held = null;
+  approved = null;
+  closed = true;
+  draft.value = "";
+  for (const pending of outgoing.values()) {
+    clearTimeout(pending.timer);
+    pending.reject(new Error("Panel closed"));
+  }
+  outgoing.clear();
+  if (ticket) {
+    try {
+      post({ id: nextId++, method: "tools/call", params: {
+        name: "protected_cancel", arguments: { ticket, target },
+      } });
+    } catch {
+      // Local state is already wiped; the dashboard review has a server-side expiry.
+    }
+  }
+}
+
+async function deliver() {
+  if (!approved || closed || phase !== "approved") return;
+  if (document.visibilityState !== "visible" || !document.hasFocus()) {
+    view("approved", "Draft checked. Return to this panel in the intended conversation to send.");
+    return;
+  }
+  const { decision, text, expiresAt } = approved;
+  approved = null;
+  if (Date.now() >= expiresAt) {
+    draft.value = "";
+    view("ready", "Checked draft expired. Nothing was sent.", "held");
+    return;
+  }
+  view("sending", "Sending checked text to this conversation…");
+  try {
+    const result = await request("ui/message", {
+      role: "user", content: [{ type: "text", text }],
+    });
+    if (closed) return;
+    if (!result || result.isError) {
+      view("stopped", "Antigravity rejected delivery. Check the conversation and reopen this panel.", "blocked");
+      return;
+    }
+    draft.value = "";
+    view("ready", decision === "SANITIZE" ? "Sanitized text submitted to Antigravity." : "Checked text submitted to Antigravity.");
+  } catch {
+    if (!closed) view("stopped", "Delivery could not be confirmed. Check this conversation before trying again.", "blocked");
+  }
+}
+
+function accept(result, afterReview) {
+  if (!releaseDecisions.has(result.decision) || typeof result.text !== "string" ||
+      !result.text.trim() || result.text.length > 20000) {
+    throw new Error("Invalid release");
+  }
+  approved = { decision: result.decision, text: result.text, expiresAt: Date.now() + 120000 };
+  draft.value = result.text;
+  view("approved", afterReview
+    ? "Reviewed draft passed. Verify this is the intended conversation, then send."
+    : "Draft checked.");
+}
+
+function schedulePoll() {
+  stopPolling();
+  if (!closed && held && phase === "held") pollTimer = setTimeout(poll, 1500);
+}
+
+async function poll() {
+  if (closed || !held || phase !== "held") return;
+  if (document.visibilityState !== "visible") {
+    schedulePoll();
+    return;
+  }
+  const ticket = held;
+  try {
+    const result = await call("protected_poll", { ticket });
+    if (closed || held !== ticket || phase !== "held") return;
+    if (result.decision === "UNCERTAIN" && result.ticket === ticket) {
+      schedulePoll();
+      return;
+    }
+    held = null;
+    if (releaseDecisions.has(result.decision)) {
+      accept(result, true);
+    } else {
+      view("ready", "Review ended without an approved draft. Nothing was sent.", "held");
+    }
+  } catch {
+    if (!closed && held === ticket) {
+      view("held", "Review service unavailable. Retry is automatic, or discard this draft.", "held");
+      schedulePoll();
+    }
+  }
+}
+
+composer.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (closed) return;
+  if (phase === "approved") {
+    await deliver();
+    return;
+  }
+  if (phase !== "ready" || !draft.value.trim()) return;
+  const text = draft.value;
+  const initialFocus = focusEpoch;
+  view("checking", "Checking locally…");
+  try {
+    const result = await call("protected_check", { text });
+    if (closed) return;
+    if (releaseDecisions.has(result.decision)) {
+      accept(result, false);
+      if (initialFocus === focusEpoch) {
+        await deliver();
+      } else {
+        view("approved", "Draft checked. Verify this is the intended conversation, then send.");
+      }
+    } else if (result.decision === "UNCERTAIN" && ticketFormat.test(result.ticket || "")) {
+      held = result.ticket;
+      view("held", "Uncertain · Held for review. Edit and recheck this draft in the Rust dashboard.", "held");
+      schedulePoll();
+    } else if (result.decision === "MALICIOUS_BLOCKED") {
+      view("ready", "Malicious · Blocked. Nothing was sent.", "blocked");
+    } else {
+      view("ready", "Nothing was sent. The draft could not be released.", "blocked");
+    }
+  } catch {
+    if (!closed) view("ready", "Local check failed. Nothing was sent.", "blocked");
+  }
+});
+
+draft.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing && !event.repeat) {
+    event.preventDefault();
+    composer.requestSubmit();
+  }
+});
+
+discard.addEventListener("click", async () => {
+  if (!["held", "approved"].includes(phase)) return;
+  stopPolling();
+  const ticket = held;
+  held = null;
+  approved = null;
+  draft.value = "";
+  if (!ticket) {
+    view("ready", "Draft discarded.");
+    return;
+  }
+  view("checking", "Discarding draft…");
+  try {
+    await call("protected_cancel", { ticket });
+  } catch {
+    if (!closed) view("ready", "This panel discarded the draft. The dashboard review expires automatically.", "held");
+    return;
+  }
+  if (!closed) view("ready", "Draft discarded.");
+});
+
+window.addEventListener("pagehide", shutdown, { once: true });
+window.addEventListener("blur", () => { focusEpoch++; });
+
+async function connect() {
+  try {
+    if (host === window) throw new Error("No MCP App host");
+    const tokenBytes = crypto.getRandomValues(new Uint8Array(24));
+    target = [...tokenBytes].map((value) => value.toString(16).padStart(2, "0")).join("");
+    const negotiated = await request("ui/initialize", {
+      protocolVersion: appProtocolVersion,
+      appInfo: { name: "Protected Send", version: "0.1.0" },
+      appCapabilities: { availableDisplayModes: ["inline"] },
+    }, 10000);
+    if (closed) return;
+    if (negotiated?.protocolVersion !== appProtocolVersion) throw new Error("Unsupported MCP Apps version");
+    post({ method: "ui/notifications/initialized" });
+    const caps = negotiated?.hostCapabilities;
+    if (!caps?.message || !caps.serverTools ||
+        (negotiated.hostContext?.displayMode && negotiated.hostContext.displayMode !== "inline")) {
+      view("stopped", "This view cannot send protected messages. Open the panel beside an Antigravity conversation.", "blocked");
+      return;
+    }
+    view("ready", "Type here to check before sending. Shift+Enter adds a line.");
+  } catch {
+    if (!closed) view("stopped", "Protected Send could not connect to Antigravity.", "blocked");
+  }
+}
+
+connect();
+</script>
+</body>
+</html>

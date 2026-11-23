@@ -1,5 +1,10 @@
 # Readiness verdict
 
+This is the evaluation checkpoint before Horizon was selected for the
+experimental Windows bundle. The current Rules + Horizon policy and supported
+interfaces are documented in the [project README](../README.md), with results
+in the [offline regression report](offline_detector_evaluation.json).
+
 Horizon is usable for a controlled, non-autonomous review pilot. It is not ready
 as a sole defense, an unattended blocking gate, or a guarantee that passing
 content is safe. Start with shadow measurement on actual project traffic before
