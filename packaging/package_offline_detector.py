@@ -39,10 +39,15 @@ def package(model_dir: Path, wheelhouse: Path, output: Path, python_version: str
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, 'x', compression=zipfile.ZIP_DEFLATED) as bundle:
         bundle.writestr('python-version.txt', python_version)
+        bundle.write(ROOT / 'README.md', 'README.md')
+        bundle.write(ROOT / 'rust-dashboard' / 'README.md', 'DASHBOARD_README.md')
         bundle.write(ROOT / 'packaging' / 'OFFLINE_DETECTOR.md', 'OFFLINE_DETECTOR.md')
-        for name in ('Setup.cmd', 'setup_detector.ps1', 'Open Dashboard.cmd',
-                     'Open Sanitizer.cmd', 'Uninstall.cmd', 'uninstall_detector.py'):
+        for name in ('Setup.cmd', 'setup_detector.ps1', 'Configure Workspace Hooks.cmd', 'Open Dashboard.cmd',
+                     'Open Sanitizer.cmd', 'Open Protected Agent.cmd', 'Uninstall.cmd', 'uninstall_detector.py',
+                     'Install Antigravity Panel.cmd', 'install_antigravity_panel.ps1', 'find_agy.ps1'):
             bundle.write(ROOT / 'packaging' / name, name)
+        for name in ('plugin.json', 'protected-send.html', 'README.md', 'mcp_config.json.example'):
+            bundle.write(ROOT / 'integrations' / 'antigravity' / name, f'antigravity-panel/{name}')
         bundle.write(dashboard, 'security-dashboard.exe')
         for file in model_files:
             bundle.write(file, f'model/{file.name}')

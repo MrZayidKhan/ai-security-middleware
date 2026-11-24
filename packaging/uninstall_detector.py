@@ -17,7 +17,9 @@ MODEL_FILES = (
 )
 BUNDLE_FILES = (
     "Setup.cmd", "setup_detector.ps1", "Open Dashboard.cmd", "security-dashboard.exe",
-    "Open Sanitizer.cmd", "OFFLINE_DETECTOR.md", "python-version.txt",
+    "Open Sanitizer.cmd", "Open Protected Agent.cmd", "OFFLINE_DETECTOR.md", "python-version.txt",
+    "README.md", "DASHBOARD_README.md", "Configure Workspace Hooks.cmd",
+    "Install Antigravity Panel.cmd", "install_antigravity_panel.ps1", "find_agy.ps1",
 )
 
 
@@ -52,7 +54,7 @@ def hook_path(agent, workspace):
     return owned_child(directory, "hooks.json")
 
 
-def register(agent, workspace):
+def register(agent, workspace, *, user_level=False):
     from security_middleware.agent_hooks import command_for
 
     if not (ROOT / "python-version.txt").is_file() or not (ROOT / "model").is_dir():
@@ -71,14 +73,30 @@ def register(agent, workspace):
         }
     registry = owned_child(ROOT, REGISTRY.name)
     entries = read_json(registry) if registry.exists() else []
-    entries = [entry for entry in entries if (entry["agent"], entry["workspace"]) != (agent, str(workspace))]
-    entries.append({"agent": agent, "workspace": str(workspace), "commands": commands})
+    scope = "user" if user_level else "workspace"
+    entries = [entry for entry in entries
+               if (entry["agent"], entry["workspace"], entry.get("scope", "workspace")) != (agent, str(workspace), scope)]
+    entry = {"agent": agent, "workspace": str(workspace), "commands": commands}
+    if user_level:
+        from security_middleware.agent_hooks import user_hook_directory
+        directory = user_hook_directory(agent)
+        if directory.resolve() != directory:
+            raise ValueError("User hook path is redirected.")
+        entry.update(scope=scope, user_directory=str(directory))
+    entries.append(entry)
     write_json(registry, entries)
 
 
 def disconnect(entry):
     workspace = Path(entry["workspace"]).resolve()
-    path = hook_path(entry["agent"], workspace)
+    if entry.get("scope") == "user":
+        from security_middleware.agent_hooks import user_hook_directory
+        directory = user_hook_directory(entry["agent"])
+        if directory != Path(entry["user_directory"]) or directory.resolve() != directory:
+            raise ValueError("User hook directory changed. Restore the original configuration path before uninstalling.")
+        path = owned_child(directory, "hooks.json")
+    else:
+        path = hook_path(entry["agent"], workspace)
     if not path.exists():
         return
     config = read_json(path)
@@ -116,15 +134,19 @@ def uninstall():
     if not registry.is_file():
         raise ValueError("Installation registry missing. Run Setup again for each connected workspace first.")
     entries = read_json(registry)
-    if not isinstance(entries, list) or not entries:
-        raise ValueError("Installation registry is empty or invalid.")
+    if not isinstance(entries, list):
+        raise ValueError("Installation registry is invalid.")
     # Check the bundle targets before disconnecting or removing anything.
     model = owned_child(ROOT, "model")
     wheels = owned_child(ROOT, "wheels")
+    panel = owned_child(ROOT, "antigravity-panel")
     venv = owned_child(ROOT, ".venv")
     files = [owned_child(ROOT, name) for name in BUNDLE_FILES]
     files.extend(owned_child(model, name) for name in MODEL_FILES)
     files.extend(owned_child(wheels, path.name) for path in wheels.glob("*.whl"))
+    files.extend(owned_child(panel, name) for name in (
+        "plugin.json", "protected-send.html", "README.md", "mcp_config.json.example", "mcp_config.json",
+    ))
     print("Close the agents, dashboard, and sanitizer before continuing.")
     if input("Type UNINSTALL to disconnect the registered workspaces and remove this bundle: ") != "UNINSTALL":
         print("Uninstall cancelled.")
@@ -136,7 +158,7 @@ def uninstall():
         shutil.rmtree(venv)
     for path in files:
         path.unlink(missing_ok=True)
-    for directory in (model, wheels):
+    for directory in (model, wheels, panel):
         if directory.is_dir() and not any(directory.iterdir()):
             directory.rmdir()
     registry.unlink()
@@ -145,11 +167,26 @@ def uninstall():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--register", nargs=2, metavar=("AGENT", "WORKSPACE"))
+    registration = parser.add_mutually_exclusive_group()
+    registration.add_argument("--register", nargs=2, metavar=("AGENT", "WORKSPACE"))
+    registration.add_argument("--register-bundle-only", action="store_true")
+    registration.add_argument("--configure-user", choices=("codex", "antigravity"))
     args = parser.parse_args()
     try:
         if args.register:
             register(*args.register)
+        elif args.configure_user:
+            from security_middleware.agent_hooks import configure
+            register(args.configure_user, ROOT, user_level=True)
+            path = configure(args.configure_user, ROOT, "offline", audit_db=ROOT / "runtime_data/security_events.db",
+                             model_dir=ROOT / "model", user_level=True)
+            print(f"Configured {args.configure_user} user hooks: {path}")
+        elif args.register_bundle_only:
+            if not (ROOT / "python-version.txt").is_file() or not (ROOT / "model").is_dir():
+                raise ValueError("Bundle registration must run from the extracted bundle.")
+            registry = owned_child(ROOT, REGISTRY.name)
+            if not registry.exists():
+                write_json(registry, [])
         else:
             uninstall()
     except (OSError, ValueError, TypeError, KeyError, AttributeError) as error:

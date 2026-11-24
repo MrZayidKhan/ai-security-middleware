@@ -1,5 +1,11 @@
 # Connect the application middleware and test English detection
 
+For the current offline bundle, follow [Windows setup](STANDALONE_SETUP.md).
+ACP provides persistent editor chat, and the offline `POST /api/sanitize`
+route screens text for applications that forward accepted messages themselves.
+The instructions below describe the optional Ollama answering-model gateway
+and the earlier English verifier configuration.
+
 There is no browser extension to install. The application sends supported model
 requests to the middleware, and the middleware inspects before forwarding to
 Ollama. The dashboard is optional for watching security events and action outcomes;

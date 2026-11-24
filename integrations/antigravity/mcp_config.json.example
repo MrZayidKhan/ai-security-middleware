@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "guard": {
+      "command": "C:/Prompt-Security/.venv/Scripts/python.exe",
+      "args": [
+        "-m",
+        "security_middleware.antigravity_panel",
+        "--model-dir",
+        "C:/Prompt-Security/model",
+        "--audit-db",
+        "C:/Prompt-Security/runtime_data/security_events.db",
+        "--panel-html",
+        "${PLUGIN_ROOT}/protected-send.html"
+      ]
+    }
+  }
+}

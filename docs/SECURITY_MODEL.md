@@ -1,6 +1,31 @@
 # Security Model
 
-## Advisory uncertainty aggregation
+## Current offline and ACP policy
+
+- Deterministic rules and local Horizon Small inspect English typed text.
+  Explicit holds and detector failures prevent release. A rule may identify
+  an exact removable line. The rewritten text is inspected again before
+  sending, and a model-only flag can have no span to highlight.
+- The protected ACP adapter forwards accepted text in the same session. A
+  held request stays pending locally for two minutes. The Rust dashboard
+  queues revised text, the adapter screens the draft, and only an accepted
+  draft reaches the original waiting turn. Cancellation or expiry prevents
+  release. An edit or an approval does not turn off inspection.
+- The local SQLite audit and review database is sensitive. It can contain
+  original prompts, flagged spans, and cleaned text. Anyone with local
+  access can read stored evidence or attempt to queue a draft. The current
+  local review flow relies on access to the database and the live pending
+  turn, with no separate reviewer identity. Fine-grained access control and
+  retention controls are open work.
+- ACP screening applies to its text prompt requests. Agent actions,
+  attachments, tool results, and other traffic stay under the host's usual
+  permissions. Native workspace hooks have the separate
+  [coverage described in the hook guide](AGENT_HOOKS.md).
+
+For implementation and verification scope, see [Architecture](ARCHITECTURE.md)
+and [Project Objectives and Scope](PROJECT_SCOPE.md).
+
+## Earlier advisory uncertainty experiment
 
 ML suspicious alone remains unresolved and held. When Qwen is configured, a benign Qwen assessment can resolve ML suspicious only if the pre-ML inspection already returned PASS. High-risk ML, unavailable ML, rule-based holds and Qwen holds remain withheld. No change to the classifier's trained parameters or thresholds is implied. This policy reduces blanket review without treating detector absence as benign. Its general false-positive/false-negative trade-off still requires evaluation on the ML workstream's held-out corpus.
 

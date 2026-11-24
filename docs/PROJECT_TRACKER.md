@@ -1,9 +1,21 @@
 # Project Tracker
 
-The current Windows x64 package combines offline screening, workspace setup,
-audit dashboard, sanitation API, and uninstall. See the [offline evaluation](offline_detector_evaluation.json)
-for English detector metrics and the [roadmap](IMPLEMENTATION_ROADMAP.md) for
-the next phase, tool-call enforcement before execution.
+## Current progress
+
+| Workstream | State | Evidence |
+| --- | --- | --- |
+| Offline Rules + Horizon | Implemented and measured | [Saved report](offline_detector_evaluation.json): 1,811 English cases, 84.32% accuracy, 95.50% precision, 79.56% recall, 86.80% F1. |
+| ACP chat | Implemented and locally tested | Original session ID retained on pass, sanitize, and reviewed release. Windows stdio bridge exercised real Horizon with a simulated agent. |
+| Rust dashboard review | Implemented and adapter-tested | Shows original prompt, rule matches, and cleaned text when available. Queues edited drafts for a waiting ACP turn. |
+| Windows distribution | Locally verified | Fresh extraction, workspace-free ACP choice, offline dependency installation, audit initialization, and no workspace hook registration. Native workspace setup remains an option. |
+| Protected Send GUI installer | Bundled worker and installer locally verified | Rebuilt with the current sanitizer. The bundled Rules + Horizon worker matched all 15 [demo prompts](PROMPT_SECURITY_DEMO.txt), including exact cleaned text for each sanitize case. |
+| Antigravity native composer | Experimental | Tries the editor's Select All action when accessibility selection fails and verifies the draft before sending. Live interception and delivery remain open. |
+| Live editor acceptance | Open | A signed-in Antigravity or Codex ACP conversation in Zed has not been verified. |
+| Third-party tool-call authorization | Next implementation phase | Controlled prototype exists. Pre-execution enforcement in supported third-party surfaces remains open. |
+
+The focused checkpoint had 23 passing Python tests and 2 passing Rust tests.
+See [Testing Plan](TESTING.md) for how to reproduce that checkpoint and
+[Implementation Roadmap](IMPLEMENTATION_ROADMAP.md) for the next phases.
 
 ## Historical checkpoints
 
@@ -19,9 +31,10 @@ Middleware tuning checkpoint: 62 tests pass. Combined mode can resolve ML uncert
 
 Current model-test checkpoint: protected local model dashboard flow, forwarding receipts, and manual acceptance guide added; 52 automated tests pass. ML files remain with the ML workstream. Browser interception, approved-review resumption, comprehensive detector evaluation and full controlled-tool integration remain pending.
 
-This is the source of truth for project progress. Statuses describe verified state; the existence of documentation alone does not complete an application feature.
+The entries below preserve the earlier delivery log. Use the table above for
+the current implementation and verification state.
 
-## Progress summary
+## Earlier progress summary
 
 Earlier model-boundary checkpoint (2026-11-15): 46 tests passed then. Current verification is recorded at the top of this file. Full agent/tool integration and detector effectiveness remain pending.
 
@@ -128,7 +141,7 @@ A task is COMPLETED only when its implementation exists, works as intended, rele
 | 2026-11-08 | Added rule-based content inspection, sanitization, held-content review queue, and an end-to-end secure document retrieval demonstration. | Content protection |
 | 2026-11-12 | Added hybrid inspection, local Qwen assessment, concise SQLite events, and Streamlit UI. Verified 27 tests, UI rendering and blank-input interaction, and local server startup. Full detector evaluation remains pending. | Hybrid protection/UI |
 
-## Current UI checkpoint
+## Earlier UI checkpoint
 
 Run `python -m streamlit run app.py` from the project environment. Four tabs expose text analysis, gateway-protected retrieval, pending reviews, and persisted security events. The local assessor was checked with a real synthetic injection request; it returned high risk. The UI rendered without exceptions and held blank input. These checks establish functionality, not detector accuracy. The assessor can itself be manipulated, and obfuscated or unfamiliar attacks can evade current checks. Sanitized text remains untrusted. Complete execution-outcome and duration auditing remains pending.
 # ML detector development checkpoint (2026-11-13)

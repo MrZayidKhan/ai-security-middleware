@@ -18,7 +18,8 @@ OLLAMA_REQUEST_TIMEOUT_SECONDS = 90
 OLLAMA_HOOK_TIMEOUT_SECONDS = 110
 
 
-def record_inspection(audit_db: Path, event: str, detector: str, released: bool, reason: str) -> None:
+def record_inspection(audit_db: Path, event: str, detector: str, released: bool, reason: str,
+                      review: dict[str, object] | None = None) -> None:
     try:
         from security_middleware.audit_log import AuditLog, initialize_audit_database
 
@@ -31,8 +32,12 @@ def record_inspection(audit_db: Path, event: str, detector: str, released: bool,
                 "origin": "tool_result" if event == "codex-result" else "user_prompt",
                 "hook_event": event,
                 "detector": detector,
+                **({"prompt_review": review} if review is not None else {}),
             },
-            decision="RELEASED" if released else "BLOCKED",
+            decision="RELEASED" if released else (
+                str(review["decision"]) if review and review["decision"] in
+                {"MALICIOUS_BLOCKED", "UNCERTAIN"} else "BLOCKED"
+            ),
         )
     except Exception:
         # Audit availability must not change the enforcement decision or hook output.
@@ -42,12 +47,14 @@ def record_inspection(audit_db: Path, event: str, detector: str, released: bool,
 def screen(event: str, detector: str, audit_db: Path | None = None, model_dir: Path | None = None) -> dict:
     reason = "Prompt security inspection unavailable."
     released = False
+    cleaned_prompt = None
+    review = None
     try:
         # Keep imports inside the handler so dependency errors also produce a block.
         from security_middleware.content_assessor import ModelAssessment, OllamaContentAssessor
-        from security_middleware.content_protection import ContentDecision, ContentInspector
-        from security_middleware.middleware import PromptSecurityMiddleware
-        from security_middleware.models import ChatMessage
+        from security_middleware.content_protection import (
+            ContentDecision, ContentEnvelope, ContentInspector, prompt_policy_outcome,
+        )
         from security_middleware.ollama_client import OllamaClient
 
         raw = sys.stdin.buffer.read(MAX_PAYLOAD_BYTES + 1)
@@ -83,28 +90,48 @@ def screen(event: str, detector: str, audit_db: Path | None = None, model_dir: P
             client = OllamaClient(timeout_seconds=OLLAMA_REQUEST_TIMEOUT_SECONDS,
                                   response_format=ModelAssessment.model_json_schema())
             assessor = OllamaContentAssessor(client)
-        middleware = PromptSecurityMiddleware(
-            ContentInspector(assessor=assessor, require_assessment_for_untrusted=detector == "ollama",
-                             detector=classifier)
+        inspector = ContentInspector(
+            assessor=assessor, require_assessment_for_untrusted=detector == "ollama",
+            detector=classifier, classify_sanitized_text=detector == "offline",
         )
-        role = "tool" if is_tool_result else "user"
-        result = middleware.before_model([ChatMessage(role=role, content=content)])
-        decision = result.content_decisions[0]
+        result = inspector.inspect(ContentEnvelope(
+            source_id=event, content_id="hook-input", content=content,
+            origin_trust="untrusted", data_sensitivity="confidential",
+            input_channel="retrieved_data" if is_tool_result else "direct_user",
+        ))
+        decision = result.decision
         if decision is ContentDecision.PASS:
             released = True
             reason = "Prompt security inspection passed."
             return {}
         if decision is ContentDecision.SANITIZE:
             reason = "Prompt security withheld text that requires sanitization."
+            if detector == "offline" and not is_tool_result:
+                cleaned_prompt = result.sanitized_content
         else:
             reason = "Prompt security withheld text for review."
+            if detector == "offline" and prompt_policy_outcome(result) == "MALICIOUS_BLOCKED":
+                reason = "Malicious prompt blocked by policy."
+        if audit_db is not None and detector == "offline" and not is_tool_result and len(content) <= 20_000:
+            review = {
+                "original": content,
+                "cleaned": cleaned_prompt,
+                "decision": prompt_policy_outcome(result),
+                "findings": [finding.model_dump() for finding in result.findings],
+                "classifier_risk": [output.risk for output in result.detector_outputs],
+            }
     except Exception:
         # Payloads and classifier reasons may contain the text being withheld.
         pass
     finally:
         if audit_db is not None:
-            record_inspection(audit_db, event, detector, released, reason)
+            record_inspection(audit_db, event, detector, released, reason, review)
 
+    if cleaned_prompt:
+        reason += (
+            "\n\nReview this cleaned prompt, then copy it into a new chat if you want to continue:"
+            "\n\n" + cleaned_prompt
+        )
     if event == "antigravity-prompt":
         return {
             "terminationBehavior": "terminate",
@@ -138,9 +165,25 @@ def command_for(event: str, detector: str, shell: str, audit_db: Path | None = N
     return {"type": "command", "command": command, "timeout": timeout}
 
 
+def user_hook_directory(agent: str) -> Path:
+    profile = Path.home().resolve()
+    if agent == "codex":
+        custom = os.environ.get("CODEX_HOME")
+        if custom:
+            path = Path(custom).expanduser()
+            if not path.is_absolute():
+                raise ValueError("CODEX_HOME must be absolute for user hook setup.")
+            return path
+        return profile / ".codex"
+    if agent == "antigravity":
+        return profile / ".gemini" / "config"
+    raise ValueError("Unsupported native agent.")
+
+
 def configure(
     agent: str, workspace: Path, detector: str, shell: str | None = None, audit_db: Path | None = None,
     model_dir: Path | None = None,
+    *, user_level: bool = False,
 ) -> Path:
     workspace = workspace.resolve(strict=True)
     if not workspace.is_dir():
@@ -153,10 +196,11 @@ def configure(
         if model_dir is None or not (workspace / model_dir).is_dir():
             raise ValueError("Supply an installed offline model directory with --model-dir.")
         model_dir = (workspace / model_dir).resolve()
-    directory = workspace / HOOK_DIRECTORY[agent]
+    directory = user_hook_directory(agent) if user_level else workspace / HOOK_DIRECTORY[agent]
     path = directory / "hooks.json"
-    if directory.is_symlink() or path.is_symlink() or not path.resolve().is_relative_to(workspace):
-        raise ValueError("Hook configuration must reside inside the workspace.")
+    if (directory.resolve() != directory or path.resolve() != path
+            or (not user_level and not path.is_relative_to(workspace))):
+        raise ValueError("Hook configuration path is redirected.")
     config = json.loads(path.read_text(encoding="utf-8-sig")) if path.exists() else {}
     if not isinstance(config, dict):
         raise ValueError("Existing hooks.json must contain a JSON object.")
@@ -181,9 +225,19 @@ def configure(
             else:
                 groups.append({"hooks": [command_for(event, detector, shell, audit_db, model_dir)]})
     else:
-        config[HOOK_GROUP] = {"PreInvocation": [command_for("antigravity-prompt", detector, shell, audit_db, model_dir)]}
+        group = config.setdefault(HOOK_GROUP, {})
+        if not isinstance(group, dict):
+            raise ValueError("Existing Antigravity middleware group must contain a JSON object.")
+        handlers = group.setdefault("PreInvocation", [])
+        if not isinstance(handlers, list):
+            raise ValueError("Existing Antigravity PreInvocation hooks must contain an array.")
+        marker = "-m security_middleware.agent_hooks hook antigravity-prompt --detector "
+        replacement = command_for("antigravity-prompt", detector, shell, audit_db, model_dir)
+        group["PreInvocation"] = [
+            handler for handler in handlers if marker not in handler.get("command", "")
+        ] + [replacement]
 
-    directory.mkdir(exist_ok=True)
+    directory.mkdir(parents=user_level, exist_ok=True)
     temp_path = None
     try:
         with NamedTemporaryFile(mode="w", encoding="utf-8", dir=directory, delete=False) as temp:

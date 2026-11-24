@@ -2,13 +2,30 @@
 
 ## Current position
 
-The Windows x64 bundle contains the offline detector, workspace setup,
-dashboard, sanitation service, and uninstaller. English screening remains
-experimental. The next phase is tool-call policy: enforce supported action
-checks before execution and verify coverage in live integrations. macOS and
-Linux packaging are deferred.
+The Windows x64 bundle contains local Rules + Horizon screening, native
+workspace hooks, protected ACP editor chat, a one-shot CLI launcher, the
+sanitizer API, Rust review dashboard, and uninstall. ACP setup needs no
+workspace path. The editor supplies the workspace at runtime.
 
-## Delivery sequence
+| Phase | Status and acceptance |
+| --- | --- |
+| Offline inspection and packaging | Implemented and locally verified: detector and model files load from an extracted Windows bundle, and ACP setup registers no workspace hooks. |
+| Persistent protected editor chat | Implemented and tested through the Windows stdio bridge with real Horizon and a simulated ACP agent. Accepted and sanitized prompts retain their original session ID. |
+| Dashboard-reviewed release | Implemented and tested in the adapter. Edited drafts are rechecked before forwarding. Canceled, expired, and still-flagged drafts cannot be sent. |
+| Protected Send for Antigravity | Windows x64 GUI installer and bundled sanitizer verified locally. Live overlay and native-composer interception and delivery still need acceptance testing. |
+| Live Antigravity and Codex ACP acceptance | Pending. Verify sign-in, pass, clean-and-send, hold, review, cancel, and follow-up in a live editor thread for each agent. |
+| Tool-call authorization | Next implementation phase. Add pre-execution enforcement only where the integration exposes a supported permission or tool boundary. Measure it separately from prompt classification. |
+| Additional coverage and validation | Pending. Expand indirect-content checks and audit retention controls. Evaluate fresh independent English data, then revisit other OS and language targets. |
+
+The [project tracker](PROJECT_TRACKER.md) records current evidence. The
+[saved regression report](offline_detector_evaluation.json) reports 84.32%
+accuracy and 95.50% precision for Rules + Horizon. The 90% overall accuracy
+goal remains open.
+
+## Historical delivery sequence
+
+The following milestones document the earlier local prototype and native hook
+work. The current Windows release and remaining work are described above.
 
 | Milestone | Deliverable | Depends on | Completion evidence |
 |---|---|---|---|

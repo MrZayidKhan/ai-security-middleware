@@ -1,0 +1,7 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "protected-send",
+  "displayName": "Protected Send",
+  "version": "0.1.0",
+  "description": "Screen chat drafts locally before sending them to the active conversation."
+}

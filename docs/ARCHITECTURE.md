@@ -1,5 +1,50 @@
 # Architecture
 
+## Current Windows architecture
+
+The supported focus is English text on Windows x64. For installation and
+verification status, start with the [project README](../README.md).
+
+```mermaid
+flowchart LR
+    E[ACP editor] -->|session/prompt| G[Python ACP guard]
+    G --> I[Rules and local Horizon Small]
+    I -->|PASS or SANITIZE| G
+    G -->|Same session ID, inspected text| A[Antigravity or Codex ACP agent]
+    A -->|Responses and protocol notifications| G
+    G --> E
+    I -->|HOLD_FOR_REVIEW| Q[(Local SQLite)]
+    Q --> D[Rust dashboard]
+    D -->|Revised draft| Q
+    Q -->|Draft for reinspection| G
+```
+
+### Components and boundaries
+
+| Component | Responsibility |
+| --- | --- |
+| `ContentInspector` | Validates and normalizes text, applies rules, and combines their results with the local detector. Known rewrite rules locate removable excerpts. The remaining text is rechecked before release. |
+| `HorizonDetector` | Loads the pinned pretrained Horizon Small ONNX model and advisory profile locally. Supplies a text-level risk signal. It does not select an exact excerpt for redaction. |
+| `acp_guard` | Intercepts ACP `session/prompt` requests with text blocks. It sends accepted text to the existing agent session and relays responses. The selected agent remains responsible for authentication, model calls, and tool permissions. |
+| Audit and review | SQLite keeps screening decisions and review data. A held request stays in the running adapter, tied to its session, request ID, and review token. The dashboard queues an edited draft. The adapter rechecks it before forwarding to the same session. |
+| Rust dashboard | Reads the selected audit database and shows recorded decisions, rule matches, and cleaned text when available. It writes review drafts for live ACP holds only when the reviewer chooses **Recheck and send**. |
+
+The ACP review window is two minutes. Canceling the turn, closing the
+connection, or letting the review expire prevents later release. A draft
+that still needs review is withheld. The database may retain flagged prompts,
+matched excerpts, and cleaned text. Preserve it as sensitive local data.
+
+The ACP guard screens text prompts. Attachments, tool traffic, and agent
+permission decisions are outside this boundary. The native hook, one-shot
+CLI, local sanitizer API, and Python middleware have separate boundaries
+described in [Project Objectives and Scope](PROJECT_SCOPE.md). In particular,
+native hooks cannot replace an original typed turn with a cleaned draft.
+
+## Local prototype and earlier checkpoints
+
+The sections below describe the separate controlled-tool demo and historical
+experiments. They do not define the current ACP or offline-bundle runtime.
+
 ## Installed agent hooks
 
 The Python package registers workspace command hooks around the model-facing inspector. Codex sends `UserPromptSubmit` and supported `PostToolUse` events. Antigravity sends `PreInvocation` with the latest typed prompt. A sanitization or hold decision blocks the original text. The host still runs the answering model and applies its own permissions. See the [project scope](PROJECT_SCOPE.md) and [hook setup](AGENT_HOOKS.md).
@@ -18,11 +63,15 @@ Protected retrieval clears raw `action.result` and exposes `released_content` on
 
 `PromptSecurityMiddleware` is the reusable boundary between an agent and its model client. It screens user and tool messages before the client is called, passes normalized or sanitized content only when the inspection result is `PASS` or `SANITIZE`, and withholds the complete context on `HOLD_FOR_REVIEW`. `SecureChatClient` applies that boundary directly before any model call, and `AgentLoop` accepts it as an optional dependency. The middleware never executes tools or grants permissions; the action gateway remains the authorization boundary.
 
-## Status
+## Legacy demo status
 
-The current checkpoint implements a local model client, demonstration loop, controlled tools, action gateway, inspection/review, local security events, Streamlit dashboard and a limited FastAPI text middleware. Full model-to-tool integration and comprehensive execution auditing remain pending. See MIDDLEWARE_USAGE.md for the current API contract.
+The earlier local demo implemented a model client, demonstration loop,
+controlled tools, action gateway, inspection and review, security events,
+Streamlit UI, and bounded HTTP middleware. Full model-to-tool integration and
+comprehensive execution auditing remain open. See [middleware usage](MIDDLEWARE_USAGE.md)
+for the HTTP integration contracts.
 
-## Current demonstration flow
+## Legacy demonstration flow
 
 ```mermaid
 flowchart LR
@@ -71,7 +120,8 @@ The inspector combines validation, Unicode normalization, invisible-character re
 
 ## Components and responsibilities
 
-1. **Interface** — the current Streamlit dashboard accepts text, presents inspection/retrieval results, shows review items, and displays stored security events.
+1. **Interface:** The optional Streamlit demo accepts text, presents inspection
+   and retrieval results, shows review items, and displays stored security events.
 2. **Agent loop** — sends the task and relevant context to a local Ollama model, parses a proposed structured tool call, and continues with a result or produces a final response. The model proposes; it does not execute.
 3. **Schema validation** — Pydantic models validate the tool name and shape/types/limits of arguments. Valid shape alone does not grant permission.
 4. **Content inspection** — labels source and sensitivity, applies transparent initial rules, and returns PASS, SANITIZE, or HOLD FOR REVIEW. It is a risk signal, not the action authorization mechanism.
@@ -129,7 +179,7 @@ The gateway is an application-level control. It cannot contain arbitrary code ru
 
 Milestones 1–5 are implemented at their documented scope. A local dashboard and limited HTTP text gateway are available. Full model-to-tool integration, broad evaluation and final hardening remain in milestones 6–10. Details and statuses are in the tracker.
 
-## Current dashboard and hybrid inspection
+## Earlier Streamlit dashboard and hybrid inspection
 
 `app.py` is a local Streamlit dashboard that calls the real project services. It can inspect entered text, retrieve approved documents through the gateway, show held review items, and display stored security events.
 

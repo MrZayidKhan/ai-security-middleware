@@ -6,7 +6,10 @@ The Git repository is `ai-security-middleware` on branch `main`. Tasks are unass
 
 ## Getting started
 
-Clone the GitHub repository and work from `D:\Mini_project\ai-security-middleware` (or an equivalent path). The repository currently has no executable setup; follow [DEVELOPMENT.md](DEVELOPMENT.md) once milestone 1 setup is approved. Do not add model binaries, private local data, credentials, or generated databases to Git.
+Clone the repository and follow [Development Guide](DEVELOPMENT.md) for
+source work or [Windows setup](STANDALONE_SETUP.md) to test a bundle. Use the
+[tracker](PROJECT_TRACKER.md) for current acceptance status. Keep model
+binaries, private data, credentials, and generated audit databases out of Git.
 
 ## Branches and commits
 

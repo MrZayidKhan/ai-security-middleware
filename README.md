@@ -1,197 +1,170 @@
 # Prompt Security Middleware
 
-**Status: experimental — English and Windows are the current supported focus.**
+**Experimental · English text · Windows x64**
 
-This project places a security boundary between an agent application and the
-model or tools that the agent uses. It inspects untrusted prompts, retrieved
-text, and proposed tool calls before they are forwarded. The middleware can
-allow safe content, sanitize a removable suspicious span, or hold content for
-review.
+This middleware screens prompts before a supported agent receives them. The
+standalone detector combines deterministic rules and the pretrained Horizon
+Small neural network, running locally through ONNX Runtime. It uses SQLite
+for audit events and a native Rust dashboard for inspection and review.
+The detector works offline. The answering agent uses its own authentication,
+tools, and model connection.
 
-The current implementation is a working research prototype. It is useful for
-local demonstrations and controlled testing, but it is not yet a complete
-security product. Detection quality, coverage, and performance must continue
-to be measured on independent data before production use.
+This README and the [dashboard README](rust-dashboard/README.md) describe
+the current checkout. Linked guides provide setup and implementation details.
 
-## Current phase
+## What happens to a prompt
 
-The near-term target is a fast, dependable English/Windows path:
+1. The inspector validates and normalizes the text and checks for recognized
+   override lines, sensitive-data directives, and suspicious encoded content.
+2. **PASS** releases the inspected text. **SANITIZE** removes a line identified
+   by a rule and releases the remainder only if it passes reinspection,
+   including the local Horizon check. **HOLD_FOR_REVIEW** withholds unresolved
+   or high-risk content and can also indicate an unavailable detector.
+3. Horizon supplies a document-level risk signal. Exact flagged excerpts in
+   the dashboard come from rule matches. A model-only hold may have no exact
+   excerpt.
 
-- Windows installation and launch instructions are the primary supported path.
-- English direct and indirect prompt-injection cases are the primary evaluation
-  set.
-- Deterministic rules and structural validation run before any model-assisted
-  assessment.
-- Suspicious text can be withheld or replaced with a marked sanitized value.
-- Tool and action permissions remain separate from text classification.
-- The Rust dashboard is the primary local event viewer.
+Tool permissions are separate from text inspection. The repository contains
+an experimental action gateway for selected operations. It is not enforced
+across all connected agents.
 
-Other languages, additional operating systems, broad protocol compatibility,
-and production deployment controls are planned but not claimed as complete.
+## Ways to connect
 
-## How it works
+| Integration | Current behavior |
+| --- | --- |
+| **Protected editor chat (ACP)** | Use an editor such as Zed with Antigravity (`agy acp`) or the Codex ACP adapter (`codex-acp`). Text prompts pass or are sanitized before reaching the agent. The same conversation stays open across turns. A held turn can receive a revised draft from the Rust dashboard. |
+| **Native Codex and Antigravity hooks** | Workspace hooks enforce blocks and can show a cleaned preview for typed prompts. Submit the cleaned version in a new chat. These hooks cannot substitute text in the original turn. Codex also screens supported post-tool results. |
+| **Protected CLI launcher** | `Open Protected Agent.cmd` screens one prompt and starts a fresh CLI turn with the accepted text. Enter `/send` to submit multiline input. |
+| **Local HTTP sanitizer** | `Open Sanitizer.cmd` starts the loopback service. A client calls `POST /api/sanitize` and can forward the returned messages after release. The endpoint does not call an answering model. |
+| **Python integration** | Applications can use `ContentInspector` or the model-facing `PromptSecurityMiddleware` at a boundary they control. |
 
-```text
-Agent request
-    -> validation and normalization
-    -> rules and encoding checks
-    -> optional local risk assessment
-    -> sanitation or hold decision
-    -> tool/action policy checks
-    -> release to the configured model or agent
-    -> SQLite audit event and receipt
-```
+ACP currently accepts text prompt blocks. Attachments, tool results, and
+agent permissions are outside ACP prompt screening. Native hooks cover only
+the events provided by each host. Hook trust and coverage are described in
+the [agent hook guide](docs/AGENT_HOOKS.md).
 
-The detector is not allowed to execute the text it evaluates. A detector result
-does not grant tool access. Tool calls must pass their own schema, allowlist,
-argument, path, network, and confirmation checks.
+### In-app Protected Send development
 
-When a local verifier is enabled, the middleware connects to the locally
-configured inference service. The verifier is an advisory signal inside the
-policy engine; deterministic holds and detector failures remain fail-closed.
-The answering model is not bundled in this repository, and its responses are
-not cached by the middleware.
+The [Windows overlay prototype](native-overlay/README.md) targets the existing
+Antigravity composer. It provides a separate local draft buffer over the input
+area. The experimental **Try native composer** mode uses the original input
+box when the companion can verify the active chat, draft, and Send control.
+The local Windows x64 GUI installer bundles the offline worker and dashboard.
+All 15 [demo prompts](docs/PROMPT_SECURITY_DEMO.txt) matched their expected
+inspection outcomes against the rebuilt bundled worker. Native Antigravity
+interception and delivery are still unverified.
 
-## Connections
+The [Antigravity connector prototype](integrations/antigravity/README.md)
+adds a separate draft panel within the official app. Its local connector
+service shares the Rules + Horizon policy and the dashboard review store.
+Each host connector must bind a submission to the intended conversation
+and verify delivery through that host's supported interface. The stock
+composer remains a separate path. Antigravity live delivery and a native
+Codex connector remain separate acceptance checks.
+See the [connector contract and acceptance checks](docs/PROTECTED_SEND_CONNECTORS.md).
 
-The middleware is designed around adapters rather than one particular agent.
-The current repository provides:
+## Windows setup
 
-- a bounded HTTP gateway for applications that can send requests to a local
-  endpoint;
-- Python interfaces for embedding inspection in a custom agent;
-- generated Codex and Antigravity hook handlers for the inputs those hosts
-  expose;
-- a separate action gateway for the small set of controlled operations covered
-  by the prototype.
+Use the all-in-one Windows x64 ZIP built for the version you want to test.
+GitHub Actions artifacts reflect the revision that built them. Check that
+the bundled setup guide describes the features you need. The current x64
+bundle expects Windows Python **3.14** and includes the Horizon files and
+Python dependency wheels.
 
-For another CLI or desktop application, choose an adapter based on the
-interface it exposes:
+1. Extract the full ZIP into a fresh folder and run **Setup.cmd**.
+2. Setup installs without a menu or workspace and registers user-level hooks
+   for detected Antigravity and Codex installations. It attempts to install
+   the experimental Antigravity panel when `agy` is available. Codex requires
+   reviewing and trusting new hooks in the app. For the optional ACP editor
+   integration, the editor supplies the workspace at runtime. Use the
+   [ACP example in the bundle guide](packaging/OFFLINE_DETECTOR.md#protected-chat-in-an-acp-editor)
+   to add the protected agent to your editor. The selected agent CLI or ACP
+   adapter must be installed and authenticated separately.
+3. **Configure Workspace Hooks.cmd** is available for explicit project-level
+   setup. Existing project and user hooks can both run, so avoid installing
+   the same guard at both scopes for one project.
+4. Open **Open Dashboard.cmd** from the same bundle. It reads
+   `runtime_data/security_events.db`.
 
-1. Use an HTTP adapter when the application can target a configurable local
-   endpoint.
-2. Use a hook adapter when it exposes pre-prompt or pre-tool hooks.
-3. Use the Python interface when the application is Python-based.
-4. Add a new adapter when none of those interfaces are available.
+**Uninstall.cmd** disconnects workspace hooks recorded by the installer and
+removes managed bundle files while preserving the audit database. Remove any
+custom ACP editor entry you added manually.
 
-The official desktop application for a model provider is not automatically
-intercepted. It must be configured to use the gateway or an available hook.
+## Reviewing a held ACP turn
 
-## Windows quick start
+The dashboard distinguishes **Malicious · Blocked** (an explicit hard-block
+rule, no release) from **Uncertain · Held for review** (a hold without a
+hard-block match). This policy applies to the protected ACP adapter,
+one-shot launcher, and offline native prompt hooks.
 
-Download `distribution-all-in-one-windows-x64` from a successful
-[GitHub Actions run](https://github.com/MrZayidKhan/ai-security-middleware/actions).
-Extract the artifact and its inner ZIP, run **Setup.cmd**, and choose your
-agent and workspace. **Open Dashboard.cmd** shows local decisions.
-**Open Sanitizer.cmd** starts the local sanitation API for clients that
-can substitute screened text. The workspace hooks can withhold text that
-requires sanitation. **Uninstall.cmd** disconnects workspaces recorded by
-Setup and removes its managed files.
+Open the held event in the dashboard, write a revised draft, and click
+**Recheck and send** within two minutes. The adapter ties the draft to the
+waiting ACP turn and rechecks it before forwarding. A canceled or expired
+review cannot be sent. If the revision is still held, submit a new draft via
+the editor. Native hook events offer **Copy for resubmission** instead.
 
-Use Python 3.10 or newer. From a PowerShell window in the repository:
+Held and sanitized typed prompts can be stored in the local database along
+with their rule matches and cleaned text. Treat that database as sensitive.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install .
-```
+## Classifier evaluation
 
-Install the gateway dependencies before running it from source:
+The shipped Horizon model is pretrained. Earlier local models trained on
+PromptShield and deepset were experiments. See [dataset decisions](docs/DATASET_DECISIONS.md)
+for the training and evaluation split.
 
-```powershell
-.\.venv\Scripts\python.exe -m pip install ".[gateway]"
-.\.venv\Scripts\python.exe -m scripts.run_middleware --detector english-verifier
-```
+The [saved English regression report](docs/offline_detector_evaluation.json)
+contains 1,811 examples after removing 22 repeats: 240 Horizon boundary
+pairs, 339 NotInject prompts, 1,054 InjecAgent base cases, and 178 BIPIA clean
+contexts.
 
-The HTTP endpoint is `http://127.0.0.1:8787`. Interactive API documentation is
-available at `http://127.0.0.1:8787/docs`.
+| Configuration | Accuracy | Precision | Recall | F1 |
+| --- | ---: | ---: | ---: | ---: |
+| Rules only | 36.33% | 81.82% | 2.30% | 4.47% |
+| Rules + Horizon | 84.32% | 95.50% | 79.56% | 86.80% |
 
-The optional local verifier is installed and configured separately. It is not
-part of the wheel and its model files are not committed to this repository.
-See [the standalone setup guide](docs/STANDALONE_SETUP.md) and
-[the agent hook guide](docs/AGENT_HOOKS.md) for the supported configuration.
+Both a hold and a sanitization count as detections. This public regression
+suite measures detection and recorded decisions. It yielded zero combined
+sanitizations, so use the redaction smoke tests to demonstrate cleanup.
+Overall accuracy is below the 90% target. Upstream training overlap is unknown,
+and the indirect benign and attack cases come from different sources.
 
-## Dashboard
-
-The Rust dashboard is a read-only local viewer for the SQLite audit database.
-It can run without Python, a browser, or a running gateway:
-
-```powershell
-.\rust-dashboard\target\release\security-dashboard.exe --summary
-```
-
-Open the executable without `--summary` for the desktop view. The dashboard
-reads the path passed with `--db`, then the
-`AI_SECURITY_MIDDLEWARE_AUDIT_DB` environment variable, then the local runtime
-database locations described in [standalone setup](docs/STANDALONE_SETUP.md).
-
-The cards show recorded events and inspection outcomes; they are not a claim
-that every withheld event is a confirmed attack.
-
-## Current functionality
-
-| Area | Current behavior |
-|---|---|
-| Inspection | Validation, normalization, encoding checks, rules, and optional local risk evidence |
-| Sanitation | Removes a supported suspicious excerpt or withholds unresolved content |
-| Tool safety | Separate schemas, allowlists, argument checks, and bounded operations |
-| Agent hooks | Codex and Antigravity paths covered where their host interfaces expose the required event |
-| HTTP gateway | Bounded non-streaming text requests with receipts and audit events |
-| Audit | Local SQLite records for inspections, decisions, and forwarding outcomes |
-| Dashboard | Native Rust viewer with filters, event details, and summary mode |
-| Evaluation | Reproducible tests and reports; no detector is accepted solely from a published score |
-
-## Testing
-
-Run the local test suite from PowerShell:
+Re-run the evaluation from the repository root once the local model, datasets,
+and development dependencies are installed:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest -q --basetemp .pytest-tmp
+.\.venv\Scripts\python.exe -m scripts.evaluate_offline_detector --model-dir models/pretrained/horizon-small --output offline-evaluation-demo.json
+```
+
+See [dataset import](docs/DATASET_IMPORT.md) and [Horizon setup](docs/HORIZON_SETUP.md).
+
+## Verification and remaining work
+
+- Local verification covered the Windows ACP stdio bridge with a real Horizon
+  model and simulated agent, same-conversation reviewed release, hold
+  cancellation, and rejected drafts. The focused run passed **23 Python tests**
+  and **2 Rust tests**.
+- The ACP installer was verified from a fresh extracted ZIP with no workspace
+  registration. The tests did not exercise a live signed-in Antigravity or
+  Codex session in Zed.
+- Next work includes a live two-agent smoke test, broader indirect-content
+  coverage, pre-execution tool-call authorization, audit retention controls,
+  and independent evaluation on fresh data.
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/test_acp_guard.py tests/test_agent_hooks.py tests/test_protected_agent.py tests/test_bundle_uninstall.py -q
 cargo test --locked --manifest-path rust-dashboard/Cargo.toml
 ```
 
-Use [manual testing](docs/MANUAL_TESTING.md) for benign, direct-injection,
-indirect-injection, sanitation, and review cases. Report accuracy, precision,
-recall, F1, false-positive rate, false-negative rate, and latency on a held-out
-set. Do not tune thresholds on the final test set.
+## Project guides
 
-Run the shipped detector and rules-only baseline side by side with
-`python -m scripts.evaluate_offline_detector --model-dir models/pretrained/horizon-small --output offline-evaluation.json`.
-The report lists input sources and counts, direct and indirect results,
-accuracy, precision, recall, F1, and latency. The evaluator reads local
-datasets. See [dataset import](docs/DATASET_IMPORT.md) and
-[Horizon setup](docs/HORIZON_SETUP.md).
-
-## What remains to be done
-
-- Replace the current experimental risk signal with a separately evaluated,
-  compact prompt-injection classifier.
-- Add a dedicated action-risk policy dataset and test tool calls independently
-  from prompt text.
-- Improve sanitation for more content formats while preserving provenance.
-- Add a guided setup screen for choosing an agent type, endpoint, and audit
-  database.
-- Expand adapter coverage for additional CLI and desktop applications.
-- Verify macOS and Linux packaging after the Windows path is stable.
-- Add authentication, signed audits, deployment guidance, and recovery for
-  interrupted agent sessions.
-- Re-run independent English evaluation after every detector or policy change.
-
-## Documentation
-
-- [Standalone setup](docs/STANDALONE_SETUP.md)
-- [Agent hooks](docs/AGENT_HOOKS.md)
-- [Application connection guide](docs/APPLICATION_CONNECTION_ENGLISH.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Security model](docs/SECURITY_MODEL.md)
-- [Manual testing](docs/MANUAL_TESTING.md)
-- [Evaluation report](docs/PROMPT_INJECTION_EVALUATION.md)
-- [Project scope](docs/PROJECT_SCOPE.md)
+- [Architecture](docs/ARCHITECTURE.md) and [security model](docs/SECURITY_MODEL.md) explain the active boundaries and remaining risks.
+- [Scope](docs/PROJECT_SCOPE.md), [roadmap](docs/IMPLEMENTATION_ROADMAP.md), and [tracker](docs/PROJECT_TRACKER.md) distinguish implemented features, verified checkpoints, and open work.
+- [Windows setup](docs/STANDALONE_SETUP.md), [native hook setup](docs/AGENT_HOOKS.md), and [manual testing](docs/MANUAL_TESTING.md) cover setup and live checks.
+- [Evaluation summary](docs/PROMPT_INJECTION_EVALUATION.md) links the current offline report and earlier model experiments.
 
 ## Contribution and branch policy
 
-Changes are made on a new branch, tested, and pushed for review. The main
-branch is updated only after the change has been reviewed and explicitly
-approved for merging.
-
-Keep local datasets, credentials, model weights, and runtime databases out of
-commits. See [development](docs/DEVELOPMENT.md) for the repository workflow.
+Make changes on a new branch and test them before pushing for review. Merge
+into main only after review and explicit approval. Keep credentials, model
+weights, local datasets, and runtime databases out of commits. See
+[development](docs/DEVELOPMENT.md) for the repository workflow.
